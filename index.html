@@ -68,9 +68,14 @@
                         <input type="number" id="book-pages" placeholder="総ページ・問題数" class="p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
                         <input type="date" id="book-deadline" class="p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
                     </div>
+                    <div class="flex items-center space-x-2 border rounded p-2 bg-slate-50">
+                        <i class="fa-solid fa-image text-slate-400 pl-1"></i>
+                        <input type="file" id="book-image" accept="image/*" class="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 flex-1">
+                    </div>
                     <button onclick="addBook()" class="w-full bg-slate-800 text-white text-sm font-bold py-2 rounded-lg hover:bg-slate-700 transition-colors">登録して目標ペースを計算</button>
                 </div>
             </div>
+            <p class="text-[11px] text-slate-400 text-center px-2"><i class="fa-solid fa-circle-info mr-1"></i>教材の写真をタップすると、その場で勉強時間をクイック記録できます！</p>
             <div id="books-list" class="space-y-3"></div>
         </div>
 
@@ -106,6 +111,36 @@
 
     </main>
 
+    <div id="quick-log-modal" class="fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold text-slate-800" id="modal-book-title">教材のクイック記録</h3>
+                <button onclick="closeQuickLogModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="modal-book-preview" class="w-20 h-24 bg-slate-100 rounded mx-auto overflow-hidden shadow-sm hidden">
+                <img id="modal-img" class="w-full h-full object-cover">
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 block mb-1">連動するカテゴリ</label>
+                    <select id="modal-log-subject" class="w-full text-sm border rounded p-2 bg-slate-50"></select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 block mb-1">勉強時間（分）</label>
+                    <input type="number" id="modal-log-duration" placeholder="分単位で入力" class="w-full p-2 text-sm border rounded text-center font-bold focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 block mb-1">メモ・振り返り</label>
+                    <textarea id="modal-log-comment" placeholder="解いた問題番号や、手応えなど..." class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeQuickLogModal()" class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">キャンセル</button>
+                <button onclick="submitQuickLog()" class="flex-1 bg-blue-500 text-white py-2 rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-md">タイムラインに記録</button>
+            </div>
+        </div>
+    </div>
+
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 shadow-lg z-50 max-w-md mx-auto">
         <button onclick="switchTab('timeline')" id="nav-timeline" class="flex flex-col items-center space-y-1 text-blue-500 transition-colors w-1/5">
             <i class="fa-solid fa-list-ul text-xl"></i><span class="text-[10px] font-bold">記録</span>
@@ -123,7 +158,8 @@
             <i class="fa-solid fa-gear text-xl"></i><span class="text-[10px] font-bold">設定</span>
         </button>
     </nav>
-<script>
+
+    <script>
         // --- DATA INITIALIZATION ---
         const SUBJECT_COLORS = ['bg-blue-500', 'bg-pink-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-cyan-600', 'bg-rose-500', 'bg-indigo-500'];
 
@@ -137,6 +173,8 @@
                 { id: 'science', name: '理科', color: 'bg-emerald-500', text: 'Sci' }
             ]
         };
+
+        let currentActiveBookId = null; // モーダルで開いている教材のIDを保持
 
         function saveState() {
             localStorage.setItem('study_logs', JSON.stringify(state.logs));
@@ -166,7 +204,6 @@
                     const importedData = JSON.parse(e.target.result);
                     if (importedData.logs && importedData.books) {
                         state = importedData;
-                        // subjectsが存在しない古いバックアップの互換性対応
                         if(!state.subjects) {
                             state.subjects = [{ id: 'math', name: '数学', color: 'bg-blue-500', text: 'Math' }];
                         }
@@ -228,7 +265,7 @@
                 saveState();
                 renderSettingsSubjects();
                 populateSubjectSelects();
-                renderTimeline(); // タイムラインの表示更新
+                renderTimeline();
             }
         }
 
@@ -236,6 +273,7 @@
             const optionsHtml = state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
             document.getElementById('log-subject').innerHTML = optionsHtml;
             document.getElementById('timer-subject').innerHTML = optionsHtml;
+            document.getElementById('modal-log-subject').innerHTML = optionsHtml;
         }
 
         // --- TAB NAVIGATION ---
@@ -288,12 +326,18 @@
                         ${log.comment ? `<p class="text-sm text-slate-700 mb-3 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">${escapeHtml(log.comment)}</p>` : ''}
                         
                         <div class="border border-slate-100 rounded-xl p-3 flex items-center space-x-4 bg-slate-50/50">
-                            <div class="w-14 h-18 ${subj.color} rounded shadow-sm flex flex-col justify-between p-1.5 text-white text-[8px] font-bold aspect-[3/4]">
-                                <span>${subj.text}</span>
-                                <div class="w-full h-[2px] bg-white/40"></div>
-                            </div>
+                            ${log.bookImage ? `
+                                <div class="w-14 h-18 rounded overflow-hidden shadow-sm aspect-[3/4]">
+                                    <img src="${log.bookImage}" class="w-full h-full object-cover">
+                                </div>
+                            ` : `
+                                <div class="w-14 h-18 ${subj.color} rounded shadow-sm flex flex-col justify-between p-1.5 text-white text-[8px] font-bold aspect-[3/4]">
+                                    <span>${subj.text}</span>
+                                    <div class="w-full h-[2px] bg-white/40"></div>
+                                </div>
+                            `}
                             <div>
-                                <div class="font-bold text-sm text-slate-800">${subj.name}</div>
+                                <div class="font-bold text-sm text-slate-800">${subj.name} ${log.bookName ? `<span class="text-xs text-slate-400 block font-normal mt-0.5">教材: ${escapeHtml(log.bookName)}</span>` : ''}</div>
                                 <div class="text-slate-600 text-xs mt-1 flex items-center">
                                     <i class="fa-regular fa-clock mr-1 text-amber-500"></i> <strong class="text-slate-800 text-sm ml-0.5">${durationDisplay}</strong>
                                 </div>
@@ -316,7 +360,9 @@
                 subjectId: subjEl.value,
                 duration: duration,
                 comment: commentEl.value.trim(),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                bookName: null,
+                bookImage: null
             });
             saveState();
             renderTimeline();
@@ -428,7 +474,9 @@
                 subjectId: subjId,
                 duration: loggedMinutes,
                 comment: timerMode === 'pomodoro' ? 'ポモドーロ完了！' : 'タイマー計測',
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                bookName: null,
+                bookImage: null
             });
             saveState();
             renderTimeline();
@@ -453,24 +501,37 @@
 
                 return `
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-800">${escapeHtml(book.name)}</h4>
-                                <p class="text-[10px] text-slate-400">期限: ${book.deadline} (${daysLeft > 0 ? `あと ${daysLeft} 日` : '期限超過'})</p>
+                        <div class="flex space-x-3 items-start">
+                            <div onclick="openQuickLogModal(${book.id})" class="w-16 h-20 bg-slate-100 rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity active:scale-95 shrink-0" title="タップしてクイック記録">
+                                ${book.image ? `
+                                    <img src="${book.image}" class="w-full h-full object-cover">
+                                ` : `
+                                    <i class="fa-solid fa-book text-slate-300 text-xl mb-1"></i>
+                                    <span class="text-[8px] text-slate-400 text-center font-bold px-1 leading-tight">タップで<br>記録</span>
+                                `}
                             </div>
-                            <button onclick="deleteBook(${book.id})" class="text-slate-300 hover:text-red-400 text-xs transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <h4 onclick="openQuickLogModal(${book.id})" class="font-bold text-sm text-slate-800 truncate cursor-pointer hover:text-blue-500">${escapeHtml(book.name)}</h4>
+                                    <button onclick="deleteBook(${book.id})" class="text-slate-300 hover:text-red-400 text-xs transition-colors pl-2"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-0.5">期限: ${book.deadline} (${daysLeft > 0 ? `あと ${daysLeft} 日` : '期限超過'})</p>
+                                
+                                <div class="mt-2">
+                                    <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                                        <span>進捗: ${book.currentPages || 0} / ${book.totalPages} P</span>
+                                        <span>${progressPercent}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-blue-500 h-full" style="width: ${progressPercent}%"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
-                                <span>進捗: ${book.currentPages || 0} / ${book.totalPages} P</span>
-                                <span>${progressPercent}%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div class="bg-blue-500 h-full" style="width: ${progressPercent}%"></div>
-                            </div>
-                        </div>
+
                         <div class="bg-slate-50 p-2 rounded-lg flex justify-between items-center text-xs">
-                            <span class="text-slate-500 font-medium">目標ペース:</span>
+                            <span class="text-slate-500 font-medium"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>目標ペース:</span>
                             <span class="font-bold text-slate-800">${remainingPages === 0 ? '🎉 完了！' : `1日あたり ${dailyPace} P`}</span>
                         </div>
                         <div class="flex items-center space-x-2 pt-1">
@@ -486,19 +547,37 @@
             const nameEl = document.getElementById('book-name');
             const pagesEl = document.getElementById('book-pages');
             const deadlineEl = document.getElementById('book-deadline');
+            const imageEl = document.getElementById('book-image');
 
-            if(!nameEl.value || !pagesEl.value || !deadlineEl.value) return alert('すべての項目を入力してください。');
+            if(!nameEl.value || !pagesEl.value || !deadlineEl.value) return alert('写真以外のすべての項目を入力してください。');
 
-            state.books.push({
-                id: Date.now(),
-                name: nameEl.value.trim(),
-                totalPages: parseInt(pagesEl.value),
-                currentPages: 0,
-                deadline: deadlineEl.value
-            });
-            saveState();
-            renderBooks();
-            nameEl.value = ''; pagesEl.value = ''; deadlineEl.value = '';
+            const file = imageEl.files[0];
+            
+            // 写真が選ばれている場合はBase64文字列に変換して保存
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, reader.result);
+                    imageEl.value = ''; // ファイル選択をリセット
+                }
+                reader.readAsDataURL(file);
+            } else {
+                saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, null);
+            }
+
+            function saveBookData(name, totalPages, deadline, imageData) {
+                state.books.push({
+                    id: Date.now(),
+                    name: name,
+                    totalPages: totalPages,
+                    currentPages: 0,
+                    deadline: deadline,
+                    image: imageData // Base64の画像データが入る
+                });
+                saveState();
+                renderBooks();
+                nameEl.value = ''; pagesEl.value = ''; deadlineEl.value = '';
+            }
         }
 
         function updateBookProgress(id) {
@@ -520,6 +599,63 @@
                 saveState();
                 renderBooks();
             }
+        }
+
+        // --- QUICK LOG MODAL LOGIC ---
+        function openQuickLogModal(bookId) {
+            const book = state.books.find(b => b.id === bookId);
+            if (!book) return;
+
+            currentActiveBookId = bookId;
+            document.getElementById('modal-book-title').innerText = `【${book.name}】のクイック記録`;
+            
+            const previewEl = document.getElementById('modal-book-preview');
+            const imgEl = document.getElementById('modal-img');
+            if (book.image) {
+                imgEl.src = book.image;
+                previewEl.classList.remove('hidden');
+            } else {
+                previewEl.classList.add('hidden');
+            }
+
+            document.getElementById('modal-log-duration').value = '';
+            document.getElementById('modal-log-comment').value = '';
+            document.getElementById('quick-log-modal').classList.remove('hidden');
+        }
+
+        function closeQuickLogModal() {
+            document.getElementById('quick-log-modal').classList.add('hidden');
+            currentActiveBookId = null;
+        }
+
+        function submitQuickLog() {
+            const book = state.books.find(b => b.id === currentActiveBookId);
+            if (!book) return;
+
+            const durationEl = document.getElementById('modal-log-duration');
+            const duration = parseInt(durationEl.value);
+            const commentEl = document.getElementById('modal-log-comment');
+            const subjectId = document.getElementById('modal-log-subject').value;
+
+            if (!duration || duration <= 0) return alert('勉強時間を分単位で入力してください。');
+
+            // タイムラインに教材名と写真を紐付けて保存
+            state.logs.push({
+                id: Date.now(),
+                subjectId: subjectId,
+                duration: duration,
+                comment: commentEl.value.trim() || `${book.name}で勉強！`,
+                timestamp: Date.now(),
+                bookName: book.name,
+                bookImage: book.image || null
+            });
+
+            saveState();
+            renderTimeline();
+            closeQuickLogModal();
+            
+            // 記録完了後にタイムラインタブに自動移動
+            switchTab('timeline');
         }
 
         // --- GRAPH LOGIC ---
