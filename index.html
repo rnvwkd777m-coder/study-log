@@ -83,7 +83,7 @@
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <h3 class="text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-chart-line mr-1 text-indigo-500"></i>模試偏差値の入力</h3>
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <input type="text" id="exam-name" placeholder="名大オープン など" class="p-2 text-sm border rounded focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                    <input type="text" id="exam-name" placeholder="河合記述、駿台模試 など" class="p-2 text-sm border rounded focus:ring-2 focus:ring-indigo-400 focus:outline-none">
                     <input type="number" step="0.1" id="exam-deviation" placeholder="偏差値 (例: 62.5)" class="p-2 text-sm border rounded focus:ring-2 focus:ring-indigo-400 focus:outline-none">
                 </div>
                 <button onclick="addExamRecord()" class="w-full bg-indigo-500 text-white text-sm font-bold py-2 rounded-lg hover:bg-indigo-600 transition-colors">データを追加</button>
@@ -102,7 +102,7 @@
                 <h3 class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-tags mr-1 text-slate-500"></i>カテゴリ・教材名のカスタマイズ</h3>
                 <p class="text-xs text-slate-500 mb-3">記録時のプルダウンで選べる項目を自由に追加・削除できます。</p>
                 <div class="flex space-x-2 mb-4">
-                    <input type="text" id="new-subject-name" placeholder="例: 名大過去問、整数問題集..." class="flex-1 p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="new-subject-name" placeholder="例: 過去問、整数問題集..." class="flex-1 p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
                     <button onclick="addCustomSubject()" class="bg-slate-800 text-white text-sm px-4 py-1 rounded-lg font-bold hover:bg-slate-700 transition-colors">追加</button>
                 </div>
                 <div id="settings-subject-list" class="space-y-2 border-t pt-3"></div>
@@ -131,7 +131,7 @@
                 </div>
                 <div>
                     <label class="text-[11px] font-bold text-slate-400 block mb-1">メモ・振り返り</label>
-                    <textarea id="modal-log-comment" placeholder="解いた問題番号や、手応えなど..." class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
+                    <textarea id="modal-log-comment" placeholder="解いた問題や振り返りなど..." class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
                 </div>
             </div>
             <div class="flex space-x-2 pt-2">
@@ -160,7 +160,6 @@
     </nav>
 
     <script>
-        // --- DATA INITIALIZATION ---
         const SUBJECT_COLORS = ['bg-blue-500', 'bg-pink-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-cyan-600', 'bg-rose-500', 'bg-indigo-500'];
 
         let state = {
@@ -174,16 +173,19 @@
             ]
         };
 
-        let currentActiveBookId = null; // モーダルで開いている教材のIDを保持
+        let currentActiveBookId = null;
 
         function saveState() {
-            localStorage.setItem('study_logs', JSON.stringify(state.logs));
-            localStorage.setItem('study_books', JSON.stringify(state.books));
-            localStorage.setItem('study_exams', JSON.stringify(state.exams));
-            localStorage.setItem('study_subjects', JSON.stringify(state.subjects));
+            try {
+                localStorage.setItem('study_logs', JSON.stringify(state.logs));
+                localStorage.setItem('study_books', JSON.stringify(state.books));
+                localStorage.setItem('study_exams', JSON.stringify(state.exams));
+                localStorage.setItem('study_subjects', JSON.stringify(state.subjects));
+            } catch (e) {
+                alert('ブラウザの保存容量制限を超えました！\n不要な教材を削除するか、右上のダウンロードボタンからデータを一度バックアップしてください。');
+            }
         }
 
-        // --- BACKUP & RESTORE ---
         function exportData() {
             const dataStr = JSON.stringify(state, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
@@ -204,14 +206,12 @@
                     const importedData = JSON.parse(e.target.result);
                     if (importedData.logs && importedData.books) {
                         state = importedData;
-                        if(!state.subjects) {
-                            state.subjects = [{ id: 'math', name: '数学', color: 'bg-blue-500', text: 'Math' }];
-                        }
+                        if(!state.subjects) state.subjects = [{ id: 'math', name: '数学', color: 'bg-blue-500', text: 'Math' }];
                         saveState();
-                        alert('データを正常に復元しました！');
+                        alert('データを復元しました！');
                         location.reload();
-                    } else alert('対応していないファイル形式です。');
-                } catch (err) { alert('ファイルの読み込みに失敗しました。'); }
+                    } else alert('対応していないファイルです。');
+                } catch (err) { alert('読み込みに失敗しました。'); }
             };
             reader.readAsText(file);
         }
@@ -226,7 +226,6 @@
             renderSettingsSubjects();
         };
 
-        // --- SUBJECTS (SETTINGS) LOGIC ---
         function renderSettingsSubjects() {
             const list = document.getElementById('settings-subject-list');
             list.innerHTML = state.subjects.map(s => `
@@ -235,7 +234,7 @@
                         <div class="w-4 h-4 rounded-full ${s.color} shadow-sm"></div>
                         <span class="text-slate-700 font-bold">${escapeHtml(s.name)}</span>
                     </div>
-                    <button onclick="deleteCustomSubject('${s.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="deleteCustomSubject('${s.id}')" class="text-slate-300 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `).join('');
         }
@@ -244,14 +243,8 @@
             const input = document.getElementById('new-subject-name');
             const name = input.value.trim();
             if(!name) return alert('カテゴリ名を入力してください。');
-            
             const color = SUBJECT_COLORS[state.subjects.length % SUBJECT_COLORS.length];
-            state.subjects.push({
-                id: 'subj_' + Date.now(),
-                name: name,
-                color: color,
-                text: name.substring(0, 3)
-            });
+            state.subjects.push({ id: 'subj_' + Date.now(), name: name, color: color, text: name.substring(0, 3) });
             saveState();
             input.value = '';
             renderSettingsSubjects();
@@ -259,8 +252,8 @@
         }
 
         function deleteCustomSubject(id) {
-            if(state.subjects.length <= 1) return alert('最低1つはカテゴリを残してください！');
-            if(confirm('このカテゴリを削除しますか？\n（過去の記録は「削除済み」として表示されます）')) {
+            if(state.subjects.length <= 1) return alert('最低1つは残してください。');
+            if(confirm('このカテゴリを削除しますか？')) {
                 state.subjects = state.subjects.filter(s => s.id !== id);
                 saveState();
                 renderSettingsSubjects();
@@ -276,36 +269,27 @@
             document.getElementById('modal-log-subject').innerHTML = optionsHtml;
         }
 
-        // --- TAB NAVIGATION ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            
             const navIds = ['timeline', 'timer', 'plan', 'graph', 'settings'];
             navIds.forEach(id => {
                 const el = document.getElementById(`nav-${id}`);
-                if(id === tabId) {
-                    el.classList.remove('text-slate-400');
-                    el.classList.add('text-blue-500');
-                } else {
-                    el.classList.remove('text-blue-500');
-                    el.classList.add('text-slate-400');
-                }
+                if(id === tabId) { el.classList.remove('text-slate-400'); el.classList.add('text-blue-500'); }
+                else { el.classList.remove('text-blue-500'); el.classList.add('text-slate-400'); }
             });
             if(tabId === 'graph' && chartInstance) chartInstance.update();
         }
 
-        // --- TIMELINE LOGIC ---
         function renderTimeline() {
             const feed = document.getElementById('timeline-feed');
             if (state.logs.length === 0) {
-                feed.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">まだ記録がありません。<br>ストイックに記録を積み上げましょう。</div>`;
+                feed.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">まだ記録がありません。<br>記録を積み上げましょう。</div>`;
                 return;
             }
             const sortedLogs = [...state.logs].sort((a,b) => b.timestamp - a.timestamp);
-            
             feed.innerHTML = sortedLogs.map(log => {
-                const subj = state.subjects.find(s => s.id === log.subjectId) || { name: '削除済みカテゴリ', color: 'bg-slate-400', text: 'Del' };
+                const subj = state.subjects.find(s => s.id === log.subjectId) || { name: '削除済み', color: 'bg-slate-400', text: 'Del' };
                 const timeStr = new Date(log.timestamp).toLocaleTimeString('ja-JP', {hour: '2-digit', minute:'2-digit'});
                 const hrs = Math.floor(log.duration / 60);
                 const mins = log.duration % 60;
@@ -321,26 +305,22 @@
                                     <div class="text-[10px] text-slate-400">${timeStr}</div>
                                 </div>
                             </div>
-                            <button onclick="deleteLog(${log.id})" class="text-slate-300 hover:text-red-400 text-xs p-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="deleteLog(${log.id})" class="text-slate-300 hover:text-red-400 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
                         </div>
                         ${log.comment ? `<p class="text-sm text-slate-700 mb-3 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">${escapeHtml(log.comment)}</p>` : ''}
-                        
                         <div class="border border-slate-100 rounded-xl p-3 flex items-center space-x-4 bg-slate-50/50">
                             ${log.bookImage ? `
-                                <div class="w-14 h-18 rounded overflow-hidden shadow-sm aspect-[3/4]">
+                                <div class="w-12 h-16 rounded overflow-hidden shadow-sm aspect-[3/4] shrink-0">
                                     <img src="${log.bookImage}" class="w-full h-full object-cover">
                                 </div>
                             ` : `
-                                <div class="w-14 h-18 ${subj.color} rounded shadow-sm flex flex-col justify-between p-1.5 text-white text-[8px] font-bold aspect-[3/4]">
-                                    <span>${subj.text}</span>
-                                    <div class="w-full h-[2px] bg-white/40"></div>
+                                <div class="w-12 h-16 ${subj.color} rounded shadow-sm flex flex-col justify-between p-1.5 text-white text-[8px] font-bold aspect-[3/4] shrink-0">
+                                    <span>${subj.text}</span><div class="w-full h-[2px] bg-white/40"></div>
                                 </div>
                             `}
                             <div>
                                 <div class="font-bold text-sm text-slate-800">${subj.name} ${log.bookName ? `<span class="text-xs text-slate-400 block font-normal mt-0.5">教材: ${escapeHtml(log.bookName)}</span>` : ''}</div>
-                                <div class="text-slate-600 text-xs mt-1 flex items-center">
-                                    <i class="fa-regular fa-clock mr-1 text-amber-500"></i> <strong class="text-slate-800 text-sm ml-0.5">${durationDisplay}</strong>
-                                </div>
+                                <div class="text-slate-600 text-xs mt-1 flex items-center"><i class="fa-regular fa-clock mr-1 text-amber-500"></i><strong class="text-slate-800 text-sm ml-0.5">${durationDisplay}</strong></div>
                             </div>
                         </div>
                     </div>
@@ -353,102 +333,64 @@
             const subjEl = document.getElementById('log-subject');
             const durEl = document.getElementById('log-duration');
             const duration = parseInt(durEl.value);
-            if(!duration || duration <= 0) return alert('勉強時間を分単位で入力してください。');
+            if(!duration || duration <= 0) return alert('時間を入力してください。');
 
-            state.logs.push({
-                id: Date.now(),
-                subjectId: subjEl.value,
-                duration: duration,
-                comment: commentEl.value.trim(),
-                timestamp: Date.now(),
-                bookName: null,
-                bookImage: null
-            });
-            saveState();
-            renderTimeline();
-            commentEl.value = ''; durEl.value = '';
+            state.logs.push({ id: Date.now(), subjectId: subjEl.value, duration: duration, comment: commentEl.value.trim(), timestamp: Date.now(), bookName: null, bookImage: null });
+            saveState(); renderTimeline(); commentEl.value = ''; durEl.value = '';
         }
 
         function deleteLog(id) {
-            if(confirm('この記録を削除しますか？')) {
-                state.logs = state.logs.filter(l => l.id !== id);
-                saveState();
-                renderTimeline();
-            }
+            if(confirm('この記録を削除しますか？')) { state.logs = state.logs.filter(l => l.id !== id); saveState(); renderTimeline(); }
         }
 
-        // --- TIMER LOGIC ---
-        let timerInterval = null;
-        let timerMode = 'stopwatch';
-        let timerSeconds = 0;
-        let isTimerRunning = false;
-
+        let timerInterval = null, timerMode = 'stopwatch', timerSeconds = 0, isTimerRunning = false;
         function setTimerMode(mode) {
             if(isTimerRunning) return;
             timerMode = mode;
-            const btnSw = document.getElementById('btn-mode-sw');
-            const btnPomo = document.getElementById('btn-mode-pomo');
-            
+            const btnSw = document.getElementById('btn-mode-sw'), btnPomo = document.getElementById('btn-mode-pomo');
             if(mode === 'stopwatch') {
                 timerSeconds = 0;
-                btnSw.className = "px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm transition-colors";
-                btnPomo.className = "px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm transition-colors";
+                btnSw.className = "px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm";
+                btnPomo.className = "px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm";
             } else {
                 timerSeconds = 25 * 60;
-                btnSw.className = "px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm transition-colors";
-                btnPomo.className = "px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm transition-colors";
+                btnSw.className = "px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm";
+                btnPomo.className = "px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm";
             }
             updateTimerDisplay();
         }
 
         function updateTimerDisplay() {
-            const hrs = Math.floor(timerSeconds / 3600);
-            const mins = Math.floor((timerSeconds % 3600) / 60);
-            const secs = timerSeconds % 60;
+            const hrs = Math.floor(timerSeconds / 3600), mins = Math.floor((timerSeconds % 3600) / 60), secs = timerSeconds % 60;
             const timeString = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-            
             document.getElementById('timer-display').innerText = timeString;
-            
-            if (isTimerRunning) {
-                document.title = `(${timerMode === 'pomodoro' ? String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') : timeString}) My Study Log`;
-            } else {
-                document.title = "My Study Log";
-            }
+            document.title = isTimerRunning ? `(${timerMode === 'pomodoro' ? String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') : timeString}) My Study Log` : "My Study Log";
         }
 
         function toggleTimer() {
             const btn = document.getElementById('btn-timer-start');
             if(isTimerRunning) {
-                clearInterval(timerInterval);
-                isTimerRunning = false;
+                clearInterval(timerInterval); isTimerRunning = false;
                 btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-                btn.className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md hover:bg-emerald-600 transition-all active:scale-95";
-                
-                if(timerMode === 'stopwatch' && timerSeconds > 10) {
-                    document.getElementById('timer-save-zone').classList.remove('hidden');
-                } else if (timerMode === 'pomodoro' && timerSeconds === 0) {
+                btn.className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md";
+                if((timerMode === 'stopwatch' && timerSeconds > 10) || (timerMode === 'pomodoro' && timerSeconds === 0)) {
                     document.getElementById('timer-save-zone').classList.remove('hidden');
                 }
                 updateTimerDisplay();
             } else {
-                isTimerRunning = true;
-                document.getElementById('timer-save-zone').classList.add('hidden');
+                isTimerRunning = true; document.getElementById('timer-save-zone').classList.add('hidden');
                 btn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-                btn.className = "w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl shadow-md hover:bg-amber-600 transition-all active:scale-95";
-                
+                btn.className = "w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl shadow-md";
                 timerInterval = setInterval(() => {
-                    if(timerMode === 'stopwatch') {
-                        timerSeconds++;
-                    } else {
-                        if(timerSeconds > 0) {
-                            timerSeconds--;
-                        } else {
-                            clearInterval(timerInterval);
-                            isTimerRunning = false;
-                            alert('ポモドーロセッション終了！お疲れ様でした。5分間休憩しましょう。');
+                    if(timerMode === 'stopwatch') { timerSeconds++; }
+                    else {
+                        if(timerSeconds > 0) { timerSeconds--; }
+                        else {
+                            clearInterval(timerInterval); isTimerRunning = false;
+                            alert('ポモドーロセッション終了！');
                             timerSeconds = 25 * 60;
                             btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-                            btn.className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md hover:bg-emerald-600 transition-all active:scale-95";
+                            btn.className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md";
                             document.getElementById('timer-save-zone').classList.remove('hidden');
                         }
                     }
@@ -458,285 +400,120 @@
         }
 
         function resetTimer() {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
+            clearInterval(timerInterval); isTimerRunning = false;
             document.getElementById('btn-timer-start').innerHTML = `<i class="fa-solid fa-play"></i>`;
-            document.getElementById('btn-timer-start').className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md hover:bg-emerald-600 transition-all active:scale-95";
+            document.getElementById('btn-timer-start').className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md";
             document.getElementById('timer-save-zone').classList.add('hidden');
             setTimerMode(timerMode);
         }
 
         function saveTimerLog() {
             let loggedMinutes = timerMode === 'stopwatch' ? Math.max(1, Math.round(timerSeconds / 60)) : 25;
-            const subjId = document.getElementById('timer-subject').value;
-            state.logs.push({
-                id: Date.now(),
-                subjectId: subjId,
-                duration: loggedMinutes,
-                comment: timerMode === 'pomodoro' ? 'ポモドーロ完了！' : 'タイマー計測',
-                timestamp: Date.now(),
-                bookName: null,
-                bookImage: null
-            });
-            saveState();
-            renderTimeline();
-            resetTimer();
-            switchTab('timeline');
+            state.logs.push({ id: Date.now(), subjectId: document.getElementById('timer-subject').value, duration: loggedMinutes, comment: timerMode === 'pomodoro' ? 'ポモドーロ完了！' : 'タイマー計測', timestamp: Date.now(), bookName: null, bookImage: null });
+            saveState(); renderTimeline(); resetTimer(); switchTab('timeline');
         }
 
-        // --- PLAN / BOOK LOGIC ---
         function renderBooks() {
             const list = document.getElementById('books-list');
             if (state.books.length === 0) return list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">登録されている教材計画はありません。</div>`;
 
             list.innerHTML = state.books.map(book => {
-                const today = new Date();
-                const deadline = new Date(book.deadline);
-                const timeDiff = deadline.getTime() - today.getTime();
-                const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                const today = new Date(), deadline = new Date(book.deadline);
+                const daysLeft = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 3600 * 24));
                 const remainingPages = Math.max(0, book.totalPages - (book.currentPages || 0));
-                
                 let dailyPace = (daysLeft > 0 && remainingPages > 0) ? (remainingPages / daysLeft).toFixed(1) : remainingPages;
                 const progressPercent = Math.min(100, Math.round(((book.currentPages || 0) / book.totalPages) * 100));
 
                 return `
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                         <div class="flex space-x-3 items-start">
-                            <div onclick="openQuickLogModal(${book.id})" class="w-16 h-20 bg-slate-100 rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity active:scale-95 shrink-0" title="タップしてクイック記録">
-                                ${book.image ? `
-                                    <img src="${book.image}" class="w-full h-full object-cover">
-                                ` : `
-                                    <i class="fa-solid fa-book text-slate-300 text-xl mb-1"></i>
-                                    <span class="text-[8px] text-slate-400 text-center font-bold px-1 leading-tight">タップで<br>記録</span>
-                                `}
+                            <div onclick="openQuickLogModal(${book.id})" class="w-14 h-18 bg-slate-100 rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity active:scale-95 shrink-0 aspect-[3/4]" title="タップしてクイック記録">
+                                ${book.image ? `<img src="${book.image}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-book text-slate-300 text-lg mb-1"></i><span class="text-[8px] text-slate-400 text-center font-bold px-1 leading-tight">タップで<br>記録</span>`}
                             </div>
-                            
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start">
                                     <h4 onclick="openQuickLogModal(${book.id})" class="font-bold text-sm text-slate-800 truncate cursor-pointer hover:text-blue-500">${escapeHtml(book.name)}</h4>
-                                    <button onclick="deleteBook(${book.id})" class="text-slate-300 hover:text-red-400 text-xs transition-colors pl-2"><i class="fa-solid fa-trash"></i></button>
+                                    <button onclick="deleteBook(${book.id})" class="text-slate-300 hover:text-red-400 text-xs pl-2"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                                 <p class="text-[10px] text-slate-400 mt-0.5">期限: ${book.deadline} (${daysLeft > 0 ? `あと ${daysLeft} 日` : '期限超過'})</p>
-                                
                                 <div class="mt-2">
-                                    <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
-                                        <span>進捗: ${book.currentPages || 0} / ${book.totalPages} P</span>
-                                        <span>${progressPercent}%</span>
-                                    </div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                        <div class="bg-blue-500 h-full" style="width: ${progressPercent}%"></div>
-                                    </div>
+                                    <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>進捗: ${book.currentPages || 0} / ${book.totalPages} P</span><span>${progressPercent}%</span></div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-blue-500 h-full" style="width: ${progressPercent}%"></div></div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="bg-slate-50 p-2 rounded-lg flex justify-between items-center text-xs">
                             <span class="text-slate-500 font-medium"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>目標ペース:</span>
                             <span class="font-bold text-slate-800">${remainingPages === 0 ? '🎉 完了！' : `1日あたり ${dailyPace} P`}</span>
                         </div>
                         <div class="flex items-center space-x-2 pt-1">
                             <input type="number" id="update-page-${book.id}" placeholder="現在P" class="text-xs border rounded px-2 py-1 w-20 text-center" value="${book.currentPages || 0}">
-                            <button onclick="updateBookProgress(${book.id})" class="bg-slate-200 text-slate-700 font-bold text-xs px-3 py-1 rounded hover:bg-slate-300 transition-colors flex-1">進捗を更新</button>
+                            <button onclick="updateBookProgress(${book.id})" class="bg-slate-200 text-slate-700 font-bold text-xs px-3 py-1 rounded hover:bg-slate-300 flex-1">進捗を更新</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
+        // --- 📸 画像自動リサイズ・圧縮ロジック ---
         function addBook() {
             const nameEl = document.getElementById('book-name');
             const pagesEl = document.getElementById('book-pages');
             const deadlineEl = document.getElementById('book-deadline');
             const imageEl = document.getElementById('book-image');
 
-            if(!nameEl.value || !pagesEl.value || !deadlineEl.value) return alert('写真以外のすべての項目を入力してください。');
+            if(!nameEl.value || !pagesEl.value || !deadlineEl.value) return alert('必要項目を入力してください。');
 
             const file = imageEl.files[0];
-            
-            // 写真が選ばれている場合はBase64文字列に変換して保存
             if (file) {
                 const reader = new FileReader();
-                reader.onloadend = function() {
-                    saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, reader.result);
-                    imageEl.value = ''; // ファイル選択をリセット
-                }
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // スマホの巨大な写真を、アプリ表示に最適な横幅300pxに自動縮小
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 300;
+                        const scale = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scale;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        // 画質を少し落としてデータサイズを1/50程度に激しく軽量化 (画質0.6)
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, compressedBase64);
+                        imageEl.value = '';
+                    };
+                    img.src = e.target.result;
+                };
                 reader.readAsDataURL(file);
             } else {
                 saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, null);
             }
 
             function saveBookData(name, totalPages, deadline, imageData) {
-                state.books.push({
-                    id: Date.now(),
-                    name: name,
-                    totalPages: totalPages,
-                    currentPages: 0,
-                    deadline: deadline,
-                    image: imageData // Base64の画像データが入る
-                });
-                saveState();
-                renderBooks();
+                state.books.push({ id: Date.now(), name: name, totalPages: totalPages, currentPages: 0, deadline: deadline, image: imageData });
+                saveState(); renderBooks();
                 nameEl.value = ''; pagesEl.value = ''; deadlineEl.value = '';
             }
         }
 
         function updateBookProgress(id) {
-            const input = document.getElementById(`update-page-${id}`);
-            const book = state.books.find(b => b.id === id);
+            const input = document.getElementById(`update-page-${id}`), book = state.books.find(b => b.id === id);
             if(book && input) {
                 const val = parseInt(input.value);
-                if(val >= 0 && val <= book.totalPages) {
-                    book.currentPages = val;
-                    saveState();
-                    renderBooks();
-                } else alert('正しいページ範囲を入力してください。');
+                if(val >= 0 && val <= book.totalPages) { book.currentPages = val; saveState(); renderBooks(); }
+                else alert('正しい範囲を入力してください。');
             }
         }
 
         function deleteBook(id) {
-            if(confirm('この教材計画を削除しますか？')) {
-                state.books = state.books.filter(b => b.id !== id);
-                saveState();
-                renderBooks();
-            }
+            if(confirm('この教材を削除しますか？')) { state.books = state.books.filter(b => b.id !== id); saveState(); renderBooks(); }
         }
 
-        // --- QUICK LOG MODAL LOGIC ---
         function openQuickLogModal(bookId) {
             const book = state.books.find(b => b.id === bookId);
             if (!book) return;
-
             currentActiveBookId = bookId;
-            document.getElementById('modal-book-title').innerText = `【${book.name}】のクイック記録`;
-            
-            const previewEl = document.getElementById('modal-book-preview');
-            const imgEl = document.getElementById('modal-img');
-            if (book.image) {
-                imgEl.src = book.image;
-                previewEl.classList.remove('hidden');
-            } else {
-                previewEl.classList.add('hidden');
-            }
-
-            document.getElementById('modal-log-duration').value = '';
-            document.getElementById('modal-log-comment').value = '';
-            document.getElementById('quick-log-modal').classList.remove('hidden');
-        }
-
-        function closeQuickLogModal() {
-            document.getElementById('quick-log-modal').classList.add('hidden');
-            currentActiveBookId = null;
-        }
-
-        function submitQuickLog() {
-            const book = state.books.find(b => b.id === currentActiveBookId);
-            if (!book) return;
-
-            const durationEl = document.getElementById('modal-log-duration');
-            const duration = parseInt(durationEl.value);
-            const commentEl = document.getElementById('modal-log-comment');
-            const subjectId = document.getElementById('modal-log-subject').value;
-
-            if (!duration || duration <= 0) return alert('勉強時間を分単位で入力してください。');
-
-            // タイムラインに教材名と写真を紐付けて保存
-            state.logs.push({
-                id: Date.now(),
-                subjectId: subjectId,
-                duration: duration,
-                comment: commentEl.value.trim() || `${book.name}で勉強！`,
-                timestamp: Date.now(),
-                bookName: book.name,
-                bookImage: book.image || null
-            });
-
-            saveState();
-            renderTimeline();
-            closeQuickLogModal();
-            
-            // 記録完了後にタイムラインタブに自動移動
-            switchTab('timeline');
-        }
-
-        // --- GRAPH LOGIC ---
-        let chartInstance = null;
-
-        function initChart() {
-            const ctx = document.getElementById('deviationChart').getContext('2d');
-            const sortedExams = [...state.exams].sort((a,b) => a.id - b.id);
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: sortedExams.map(e => e.name),
-                    datasets: [{
-                        label: '偏差値推移',
-                        data: sortedExams.map(e => e.deviation),
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#4f46e5',
-                        pointRadius: 5,
-                        tension: 0.2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { min: 30, max: 80, ticks: { stepSize: 5 } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        function updateChart() {
-            if(!chartInstance) return;
-            const sortedExams = [...state.exams].sort((a,b) => a.id - b.id);
-            chartInstance.data.labels = sortedExams.map(e => e.name);
-            chartInstance.data.datasets[0].data = sortedExams.map(e => e.deviation);
-            chartInstance.update();
-        }
-
-        function renderExamList() {
-            const container = document.getElementById('exam-list-items');
-            if(state.exams.length === 0) return container.innerHTML = `<p class="text-xs text-slate-400 py-2">模試結果が登録されていません。</p>`;
-            
-            const sortedExams = [...state.exams].sort((a,b) => b.id - a.id);
-            container.innerHTML = sortedExams.map(e => `
-                <div class="flex justify-between items-center py-2 text-sm">
-                    <span class="text-slate-700 font-medium">${escapeHtml(e.name)}</span>
-                    <div class="flex items-center space-x-3">
-                        <span class="font-bold text-indigo-600 font-mono">${e.deviation.toFixed(1)}</span>
-                        <button onclick="deleteExam(${e.id})" class="text-slate-300 hover:text-red-400 text-xs transition-colors"><i class="fa-solid fa-xs fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addExamRecord() {
-            const nameEl = document.getElementById('exam-name');
-            const devEl = document.getElementById('exam-deviation');
-            const devValue = parseFloat(devEl.value);
-
-            if(!nameEl.value || isNaN(devValue)) return alert('模試名と正しい偏差値を入力してください。');
-
-            state.exams.push({ id: Date.now(), name: nameEl.value.trim(), deviation: devValue });
-            saveState();
-            updateChart();
-            renderExamList();
-            nameEl.value = ''; devEl.value = '';
-        }
-
-        function deleteExam(id) {
-            state.exams = state.exams.filter(e => e.id !== id);
-            saveState();
-            updateChart();
-            renderExamList();
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
-    </script>
-</body>
-</html>
