@@ -517,3 +517,75 @@
             const book = state.books.find(b => b.id === bookId);
             if (!book) return;
             currentActiveBookId = bookId;
+            document.getElementById('modal-book-title').innerText = `【${book.name}】のクイック記録`;
+            const previewEl = document.getElementById('modal-book-preview'), imgEl = document.getElementById('modal-img');
+            if (book.image) { imgEl.src = book.image; previewEl.classList.remove('hidden'); }
+            else { previewEl.classList.add('hidden'); }
+            document.getElementById('modal-log-duration').value = ''; document.getElementById('modal-log-comment').value = '';
+            document.getElementById('quick-log-modal').classList.remove('hidden');
+        }
+
+        function closeQuickLogModal() { document.getElementById('quick-log-modal').classList.add('hidden'); currentActiveBookId = null; }
+
+        function submitQuickLog() {
+            const book = state.books.find(b => b.id === currentActiveBookId);
+            if (!book) return;
+            const durationEl = document.getElementById('modal-log-duration'), duration = parseInt(durationEl.value);
+            const commentEl = document.getElementById('modal-log-comment'), subjectId = document.getElementById('modal-log-subject').value;
+            if (!duration || duration <= 0) return alert('時間を入力してください。');
+
+            state.logs.push({ id: Date.now(), subjectId: subjectId, duration: duration, comment: commentEl.value.trim() || `${book.name}で勉強！`, timestamp: Date.now(), bookName: book.name, bookImage: book.image || null });
+            saveState(); renderTimeline(); closeQuickLogModal(); switchTab('timeline');
+        }
+
+        let chartInstance = null;
+        function initChart() {
+            const ctx = document.getElementById('deviationChart').getContext('2d');
+            const sortedExams = [...state.exams].sort((a,b) => a.id - b.id);
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedExams.map(e => e.name),
+                    datasets: [{ label: '偏差値推移', data: sortedExams.map(e => e.deviation), borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderWidth: 3, pointBackgroundColor: '#4f46e5', pointRadius: 5, tension: 0.2 }]
+                },
+                options: { responsive: true, scales: { y: { min: 30, max: 80, ticks: { stepSize: 5 } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function updateChart() {
+            if(!chartInstance) return;
+            const sortedExams = [...state.exams].sort((a,b) => a.id - b.id);
+            chartInstance.data.labels = sortedExams.map(e => e.name); chartInstance.data.datasets[0].data = sortedExams.map(e => e.deviation); chartInstance.update();
+        }
+
+        function renderExamList() {
+            const container = document.getElementById('exam-list-items');
+            if(state.exams.length === 0) return container.innerHTML = `<p class="text-xs text-slate-400 py-2">模試結果が登録されていません。</p>`;
+            const sortedExams = [...state.exams].sort((a,b) => b.id - a.id);
+            container.innerHTML = sortedExams.map(e => `
+                <div class="flex justify-between items-center py-2 text-sm">
+                    <span class="text-slate-700 font-medium">${escapeHtml(e.name)}</span>
+                    <div class="flex items-center space-x-3">
+                        <span class="font-bold text-indigo-600 font-mono">${e.deviation.toFixed(1)}</span>
+                        <button onclick="deleteExam(${e.id})" class="text-slate-300 hover:text-red-400 text-xs"><i class="fa-solid fa-xs fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addExamRecord() {
+            const nameEl = document.getElementById('exam-name'), devEl = document.getElementById('exam-deviation'), devValue = parseFloat(devEl.value);
+            if(!nameEl.value || isNaN(devValue)) return alert('模試名と偏差値を入力してください。');
+            state.exams.push({ id: Date.now(), name: nameEl.value.trim(), deviation: devValue });
+            saveState(); updateChart(); renderExamList(); nameEl.value = ''; devEl.value = '';
+        }
+
+        function deleteExam(id) { state.exams = state.exams.filter(e => e.id !== id); saveState(); updateChart(); renderExamList(); }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
