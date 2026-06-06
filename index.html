@@ -3,588 +3,835 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Study Log</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>SyncStudy</title>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; background-color: #f7f9fa; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        :root {
+            --primary-color: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary-color: #06b6d4;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* サイドナビゲーション */
+        .sidebar {
+            width: 260px;
+            background-color: #0f172a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .sidebar h1 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* メインコンテンツエリア */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        header {
+            background-color: var(--card-background);
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .user-profile:hover {
+            background-color: #f1f5f9;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 16px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .content-body {
+            padding: 32px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 8px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .task-info h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .task-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+        }
+
+        .badge-danger {
+            background-color: #fee2e2;
+            color: var(--danger-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-secondary {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #c7d2fe;
+        }
+
+        /* タイマーモード切り替えタブ */
+        .timer-modes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background-color: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .mode-btn {
+            padding: 6px;
+            font-size: 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background-color: white;
+            color: var(--text-main);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            font-family: monospace;
+            margin: 12px 0;
+            color: #0f172a;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .optional-badge {
+            font-size: 11px;
+            background-color: #e2e8f0;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            font-weight: normal;
+        }
+
+        /* 画像アップロード周り */
+        .upload-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .preview-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid var(--border-color);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* タイムライン */
+        .timeline-item {
+            border-left: 2px solid var(--border-color);
+            padding-left: 16px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .timeline-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .timeline-content {
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
     </style>
 </head>
-<body class="pb-20">
+<body>
 
-    <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-slate-800">My Study Log</h1>
-        <div class="flex space-x-3 items-center">
-            <button onclick="exportData()" class="text-xs text-slate-500 hover:text-blue-500" title="バックアップを保存"><i class="fa-solid fa-download"></i></button>
-            <label class="cursor-pointer text-xs text-slate-500 hover:text-blue-500" title="データを復元">
-                <i class="fa-solid fa-upload"></i>
-                <input type="file" accept=".json" class="hidden" onchange="importData(event)">
-            </label>
-            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-mono" id="today-date"></span>
-        </div>
-    </header>
+    <div class="sidebar">
+        <h1>SyncStudy</h1>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="switchTab('dashboard')">ダッシュボード</li>
+            <li class="nav-item" onclick="switchTab('bookshelf')">本棚・目標設定</li>
+            <li class="nav-item" onclick="switchTab('timeline')">タイムライン</li>
+            <li class="nav-item" onclick="switchTab('settings')">アカウント設定</li>
+        </ul>
+    </div>
 
-    <main class="max-w-md mx-auto p-4">
-
-        <div id="tab-timeline" class="tab-content active space-y-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <textarea id="log-comment" placeholder="今の意気込みや振り返りをメモ..." class="w-full p-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" rows="2"></textarea>
-                <div class="flex space-x-2 mt-2">
-                    <select id="log-subject" class="text-sm border rounded px-2 py-1 bg-slate-50 flex-1"></select>
-                    <input type="number" id="log-duration" placeholder="分" class="text-sm border rounded px-2 py-1 w-20 text-center">
-                    <button onclick="addManualLog()" class="bg-blue-500 text-white text-sm px-4 py-1 rounded-lg font-bold hover:bg-blue-600">記録</button>
-                </div>
+    <div class="main-container">
+        <header>
+            <h2>マイページ</h2>
+            <div class="user-profile" onclick="switchTab('settings')">
+                <div class="avatar" id="header-avatar">開</div>
+                <span class="user-name" id="header-username">開発 太郎 さん</span>
             </div>
-            <div id="timeline-feed" class="space-y-3"></div>
-        </div>
+        </header>
 
-        <div id="tab-timer" class="tab-content space-y-4">
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-center">
-                <div class="flex justify-center space-x-2 mb-6">
-                    <button onclick="setTimerMode('stopwatch')" id="btn-mode-sw" class="px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm transition-colors">ストップウォッチ</button>
-                    <button onclick="setTimerMode('pomodoro')" id="btn-mode-pomo" class="px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm transition-colors">ポモドーロ (25分)</button>
-                </div>
-                <div id="timer-display" class="text-5xl font-mono font-bold text-slate-700 my-6">00:00:00</div>
-                <div class="flex justify-center space-x-4">
-                    <button id="btn-timer-start" onclick="toggleTimer()" class="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md hover:bg-emerald-600 transition-all active:scale-95"><i class="fa-solid fa-play"></i></button>
-                    <button onclick="resetTimer()" class="w-16 h-16 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xl shadow-md hover:bg-slate-300 transition-all active:scale-95"><i class="fa-solid fa-rotate-left"></i></button>
-                </div>
-                <div id="timer-save-zone" class="mt-6 pt-4 border-t hidden">
-                    <select id="timer-subject" class="w-full text-sm border rounded p-2 bg-slate-50 mb-2"></select>
-                    <button onclick="saveTimerLog()" class="w-full bg-blue-500 text-white font-bold py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">この時間をタイムラインに記録</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-plan" class="tab-content space-y-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-book-bookmark mr-1 text-blue-500"></i>教材登録 & 計画</h3>
-                <div class="space-y-2">
-                    <input type="text" id="book-name" placeholder="参考書・教材名" class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" id="book-pages" placeholder="総ページ・問題数" class="p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                        <input type="date" id="book-deadline" class="p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        <div class="content-body">
+            
+            <div id="dashboard" class="tab-content active">
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-label">本日の勉強時間</div>
+                        <div class="stat-value" id="today-time">1時間15分</div>
                     </div>
-                    <div class="flex items-center space-x-2 border rounded p-2 bg-slate-50">
-                        <i class="fa-solid fa-image text-slate-400 pl-1"></i>
-                        <input type="file" id="book-image" accept="image/*" class="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 flex-1">
+                    <div class="stat-box">
+                        <div class="stat-label">本日のノルマ達成率</div>
+                        <div class="stat-value" style="color: var(--success-color);">65%</div>
                     </div>
-                    <button onclick="addBook()" class="w-full bg-slate-800 text-white text-sm font-bold py-2 rounded-lg hover:bg-slate-700 transition-colors">登録して目標ペースを計算</button>
+                    <div class="stat-box">
+                        <div class="stat-label">目標期日までの残日数</div>
+                        <div class="stat-value" style="color: var(--warning-color);">24日</div>
+                    </div>
                 </div>
-            </div>
-            <p class="text-[11px] text-slate-400 text-center px-2"><i class="fa-solid fa-circle-info mr-1"></i>教材の写真をタップすると、その場で勉強時間をクイック記録できます！</p>
-            <div id="books-list" class="space-y-3"></div>
-        </div>
 
-        <div id="tab-graph" class="tab-content space-y-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-chart-line mr-1 text-indigo-500"></i>模試偏差値の入力</h3>
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <input type="text" id="exam-name" placeholder="河合記述、駿台模試 など" class="p-2 text-sm border rounded focus:ring-2 focus:ring-indigo-400 focus:outline-none">
-                    <input type="number" step="0.1" id="exam-deviation" placeholder="偏差値 (例: 62.5)" class="p-2 text-sm border rounded focus:ring-2 focus:ring-indigo-400 focus:outline-none">
-                </div>
-                <button onclick="addExamRecord()" class="w-full bg-indigo-500 text-white text-sm font-bold py-2 rounded-lg hover:bg-indigo-600 transition-colors">データを追加</button>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <canvas id="deviationChart" width="100%" height="70%"></canvas>
-            </div>
-            <div id="exam-list" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">登録済み模試一覧</h4>
-                <div id="exam-list-items" class="divide-y divide-slate-100"></div>
-            </div>
-        </div>
+                <div class="dashboard-grid">
+                    <div>
+                        <div class="card">
+                            <div class="card-title">今日の学習タスク（自動逆算ノルマ）</div>
+                            <div class="task-list">
+                                <div class="task-item">
+                                    <div class="task-info">
+                                        <h4>青チャート 数学ⅠA</h4>
+                                        <div class="task-meta">
+                                            <span>目標: 6/30まで</span>
+                                            <span class="badge-danger">遅れあり +2p</span>
+                                            <span style="color: var(--primary-color); font-weight: bold;">本日のノルマ: 7ページ (p.45〜51)</span>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions">
+                                        <button class="btn btn-secondary" onclick="startTimer('青チャート 数学ⅠA')">タイマー起動</button>
+                                        <button class="btn btn-primary" onclick="openRecordModal('青チャート 数学ⅠA')">手動記録</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <div id="tab-settings" class="tab-content space-y-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-tags mr-1 text-slate-500"></i>カテゴリ・教材名のカスタマイズ</h3>
-                <p class="text-xs text-slate-500 mb-3">記録時のプルダウンで選べる項目を自由に追加・削除できます。</p>
-                <div class="flex space-x-2 mb-4">
-                    <input type="text" id="new-subject-name" placeholder="例: 過去問、整数問題集..." class="flex-1 p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                    <button onclick="addCustomSubject()" class="bg-slate-800 text-white text-sm px-4 py-1 rounded-lg font-bold hover:bg-slate-700 transition-colors">追加</button>
-                </div>
-                <div id="settings-subject-list" class="space-y-2 border-t pt-3"></div>
-            </div>
-        </div>
+                    <div>
+                        <div class="card">
+                            <div class="card-title">計測コンソール</div>
+                            
+                            <div class="timer-modes">
+                                <button class="mode-btn active" id="mode-stopwatch" onclick="changeTimerMode('stopwatch')">ストップウォッチ</button>
+                                <button class="mode-btn" id="mode-pomo25" onclick="changeTimerMode('pomo25')">集中 (25分)</button>
+                                <button class="mode-btn" id="mode-pomo5" onclick="changeTimerMode('pomo5')">休憩 (5分)</button>
+                            </div>
 
-    </main>
+                            <div style="text-align: center; color: var(--text-muted); font-size: 14px;" id="timer-target">教材を選択してください</div>
+                            <div class="timer-display" id="timer-clock">00:00:00</div>
+                            <div class="timer-controls">
+                                <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">スタート</button>
+                                <button class="btn btn-secondary" onclick="resetTimer()">リセット</button>
+                            </div>
+                        </div>
 
-    <div id="quick-log-modal" class="fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4">
-            <div class="flex justify-between items-center">
-                <h3 class="text-sm font-bold text-slate-800" id="modal-book-title">教材のクイック記録</h3>
-                <button onclick="closeQuickLogModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="modal-book-preview" class="w-20 h-24 bg-slate-100 rounded mx-auto overflow-hidden shadow-sm hidden">
-                <img id="modal-img" class="w-full h-full object-cover">
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <label class="text-[11px] font-bold text-slate-400 block mb-1">連動するカテゴリ</label>
-                    <select id="modal-log-subject" class="w-full text-sm border rounded p-2 bg-slate-50"></select>
+                        <div class="card" id="record-form-box" style="display:none; border-color: var(--primary-color);">
+                            <div class="card-title" id="record-title">学習内容の記録</div>
+                            <div class="form-group">
+                                <label>勉強時間 (分)</label>
+                                <input type="number" class="form-control" id="record-duration" value="30">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center;">
+                                    進んだ量 (ページ / 問)
+                                    <span class="optional-badge">スキップ可</span>
+                                </label>
+                                <input type="number" class="form-control" id="record-amount" placeholder="入力しなくても記録できます">
+                            </div>
+                            <div class="form-group">
+                                <label>学習メモ・一言コメント</label>
+                                <textarea class="form-control" id="record-memo" rows="3" placeholder="難しかったところや、ポモドーロの消化セッション数などをメモにどうぞ！" style="resize: none; font-family: inherit;"></textarea>
+                            </div>
+                            <button class="btn btn-primary" style="width:100%" onclick="saveLog()">この内容で記録・タイムラインに投稿</button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-[11px] font-bold text-slate-400 block mb-1">勉強時間（分）</label>
-                    <input type="number" id="modal-log-duration" placeholder="分単位で入力" class="w-full p-2 text-sm border rounded text-center font-bold focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                </div>
-                <div>
-                    <label class="text-[11px] font-bold text-slate-400 block mb-1">メモ・振り返り</label>
-                    <textarea id="modal-log-comment" placeholder="解いた問題や振り返りなど..." class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
+            </div>
+
+            <div id="bookshelf" class="tab-content">
+                <div class="card"><div class="card-title">新規教材の追加</div><p style="color: var(--text-muted);">（デモ用の画面です）</p></div>
+            </div>
+
+            <div id="timeline" class="tab-content">
+                <div class="card">
+                    <div class="card-title">タイムライン (マルチユーザー共有フィード)</div>
+                    <div id="timeline-list">
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-user">
+                                    <div class="timeline-avatar" style="background-color: #fee2e2; color: #ef4444;">A</div>
+                                    <strong>受験生Aさん</strong>
+                                </div>
+                                <span>10分前</span>
+                            </div>
+                            <div class="timeline-content">
+                                <strong>青チャート 数学ⅠA</strong> を <strong>1時間15分</strong> 勉強しました！<br>
+                                <span style="color: var(--primary-color);">📈 進捗: 7ページ消化</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="flex space-x-2 pt-2">
-                <button onclick="closeQuickLogModal()" class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">キャンセル</button>
-                <button onclick="submitQuickLog()" class="flex-1 bg-blue-500 text-white py-2 rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-md">タイムラインに記録</button>
+
+            <div id="settings" class="tab-content">
+                <div class="card" style="max-width: 600px;">
+                    <div class="card-title">ユーザープロフィールの編集</div>
+                    <div class="form-group">
+                        <label for="input-username">ユーザー名</label>
+                        <input type="text" class="form-control" id="input-username" value="開発 太郎">
+                    </div>
+                    <div class="form-group">
+                        <label>プロフィール画像</label>
+                        <div class="upload-container">
+                            <div class="preview-avatar" id="upload-preview">開</div>
+                            <div class="file-input-wrapper">
+                                <button class="btn btn-secondary">写真フォルダから選択</button>
+                                <input type="file" id="image-file-input" accept="image/*" onchange="previewImage(this)">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 24px;" onclick="updateProfile()">設定を保存して反映</button>
+                </div>
             </div>
+
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 shadow-lg z-50 max-w-md mx-auto">
-        <button onclick="switchTab('timeline')" id="nav-timeline" class="flex flex-col items-center space-y-1 text-blue-500 transition-colors w-1/5">
-            <i class="fa-solid fa-list-ul text-xl"></i><span class="text-[10px] font-bold">記録</span>
-        </button>
-        <button onclick="switchTab('timer')" id="nav-timer" class="flex flex-col items-center space-y-1 text-slate-400 transition-colors w-1/5">
-            <i class="fa-solid fa-stopwatch text-xl"></i><span class="text-[10px] font-bold">タイマー</span>
-        </button>
-        <button onclick="switchTab('plan')" id="nav-plan" class="flex flex-col items-center space-y-1 text-slate-400 transition-colors w-1/5">
-            <i class="fa-solid fa-book text-xl"></i><span class="text-[10px] font-bold">計画</span>
-        </button>
-        <button onclick="switchTab('graph')" id="nav-graph" class="flex flex-col items-center space-y-1 text-slate-400 transition-colors w-1/5">
-            <i class="fa-solid fa-chart-line text-xl"></i><span class="text-[10px] font-bold">成績</span>
-        </button>
-        <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center space-y-1 text-slate-400 transition-colors w-1/5">
-            <i class="fa-solid fa-gear text-xl"></i><span class="text-[10px] font-bold">設定</span>
-        </button>
-    </nav>
-
     <script>
-        const SUBJECT_COLORS = ['bg-blue-500', 'bg-pink-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-cyan-600', 'bg-rose-500', 'bg-indigo-500'];
+        // グローバル状態
+        let currentUsername = "開発 太郎";
+        let uploadedImageDataUrl = "";
 
-        let state = {
-            logs: JSON.parse(localStorage.getItem('study_logs')) || [],
-            books: JSON.parse(localStorage.getItem('study_books')) || [],
-            exams: JSON.parse(localStorage.getItem('study_exams')) || [],
-            subjects: JSON.parse(localStorage.getItem('study_subjects')) || [
-                { id: 'math', name: '数学', color: 'bg-blue-500', text: 'Math' },
-                { id: 'english', name: '英語', color: 'bg-pink-500', text: 'Eng' },
-                { id: 'science', name: '理科', color: 'bg-emerald-500', text: 'Sci' }
-            ]
-        };
-
-        let currentActiveBookId = null;
-
-        function saveState() {
-            try {
-                localStorage.setItem('study_logs', JSON.stringify(state.logs));
-                localStorage.setItem('study_books', JSON.stringify(state.books));
-                localStorage.setItem('study_exams', JSON.stringify(state.exams));
-                localStorage.setItem('study_subjects', JSON.stringify(state.subjects));
-            } catch (e) {
-                alert('ブラウザの保存容量制限を超えました！\n不要な教材を削除するか、右上のダウンロードボタンからデータを一度バックアップしてください。');
+        // 画像選択時のプレビュー
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageDataUrl = e.target.result;
+                    const preview = document.getElementById('upload-preview');
+                    preview.textContent = "";
+                    preview.style.backgroundImage = `url('${uploadedImageDataUrl}')`;
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        function exportData() {
-            const dataStr = JSON.stringify(state, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `studylog_backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (importedData.logs && importedData.books) {
-                        state = importedData;
-                        if(!state.subjects) state.subjects = [{ id: 'math', name: '数学', color: 'bg-blue-500', text: 'Math' }];
-                        saveState();
-                        alert('データを復元しました！');
-                        location.reload();
-                    } else alert('対応していないファイルです。');
-                } catch (err) { alert('読み込みに失敗しました。'); }
-            };
-            reader.readAsText(file);
-        }
-
-        window.onload = function() {
-            document.getElementById('today-date').innerText = new Date().toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit', weekday:'short' });
-            populateSubjectSelects();
-            renderTimeline();
-            renderBooks();
-            initChart();
-            renderExamList();
-            renderSettingsSubjects();
-        };
-
-        function renderSettingsSubjects() {
-            const list = document.getElementById('settings-subject-list');
-            list.innerHTML = state.subjects.map(s => `
-                <div class="flex justify-between items-center p-2 bg-slate-50 border rounded text-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-4 h-4 rounded-full ${s.color} shadow-sm"></div>
-                        <span class="text-slate-700 font-bold">${escapeHtml(s.name)}</span>
-                    </div>
-                    <button onclick="deleteCustomSubject('${s.id}')" class="text-slate-300 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function addCustomSubject() {
-            const input = document.getElementById('new-subject-name');
-            const name = input.value.trim();
-            if(!name) return alert('カテゴリ名を入力してください。');
-            const color = SUBJECT_COLORS[state.subjects.length % SUBJECT_COLORS.length];
-            state.subjects.push({ id: 'subj_' + Date.now(), name: name, color: color, text: name.substring(0, 3) });
-            saveState();
-            input.value = '';
-            renderSettingsSubjects();
-            populateSubjectSelects();
-        }
-
-        function deleteCustomSubject(id) {
-            if(state.subjects.length <= 1) return alert('最低1つは残してください。');
-            if(confirm('このカテゴリを削除しますか？')) {
-                state.subjects = state.subjects.filter(s => s.id !== id);
-                saveState();
-                renderSettingsSubjects();
-                populateSubjectSelects();
-                renderTimeline();
-            }
-        }
-
-        function populateSubjectSelects() {
-            const optionsHtml = state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-            document.getElementById('log-subject').innerHTML = optionsHtml;
-            document.getElementById('timer-subject').innerHTML = optionsHtml;
-            document.getElementById('modal-log-subject').innerHTML = optionsHtml;
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            const navIds = ['timeline', 'timer', 'plan', 'graph', 'settings'];
-            navIds.forEach(id => {
-                const el = document.getElementById(`nav-${id}`);
-                if(id === tabId) { el.classList.remove('text-slate-400'); el.classList.add('text-blue-500'); }
-                else { el.classList.remove('text-blue-500'); el.classList.add('text-slate-400'); }
-            });
-            if(tabId === 'graph' && chartInstance) chartInstance.update();
-        }
-
-        function renderTimeline() {
-            const feed = document.getElementById('timeline-feed');
-            if (state.logs.length === 0) {
-                feed.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">まだ記録がありません。<br>記録を積み上げましょう。</div>`;
-                return;
-            }
-            const sortedLogs = [...state.logs].sort((a,b) => b.timestamp - a.timestamp);
-            feed.innerHTML = sortedLogs.map(log => {
-                const subj = state.subjects.find(s => s.id === log.subjectId) || { name: '削除済み', color: 'bg-slate-400', text: 'Del' };
-                const timeStr = new Date(log.timestamp).toLocaleTimeString('ja-JP', {hour: '2-digit', minute:'2-digit'});
-                const hrs = Math.floor(log.duration / 60);
-                const mins = log.duration % 60;
-                const durationDisplay = hrs > 0 ? `${hrs}時間 ${mins}分` : `${mins}分`;
-
-                return `
-                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 relative">
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white text-xs font-bold shadow-sm">Me</div>
-                                <div>
-                                    <div class="text-xs font-bold text-slate-700">自分</div>
-                                    <div class="text-[10px] text-slate-400">${timeStr}</div>
-                                </div>
-                            </div>
-                            <button onclick="deleteLog(${log.id})" class="text-slate-300 hover:text-red-400 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                        ${log.comment ? `<p class="text-sm text-slate-700 mb-3 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">${escapeHtml(log.comment)}</p>` : ''}
-                        <div class="border border-slate-100 rounded-xl p-3 flex items-center space-x-4 bg-slate-50/50">
-                            ${log.bookImage ? `
-                                <div class="w-12 h-16 rounded overflow-hidden shadow-sm aspect-[3/4] shrink-0">
-                                    <img src="${log.bookImage}" class="w-full h-full object-cover">
-                                </div>
-                            ` : `
-                                <div class="w-12 h-16 ${subj.color} rounded shadow-sm flex flex-col justify-between p-1.5 text-white text-[8px] font-bold aspect-[3/4] shrink-0">
-                                    <span>${subj.text}</span><div class="w-full h-[2px] bg-white/40"></div>
-                                </div>
-                            `}
-                            <div>
-                                <div class="font-bold text-sm text-slate-800">${subj.name} ${log.bookName ? `<span class="text-xs text-slate-400 block font-normal mt-0.5">教材: ${escapeHtml(log.bookName)}</span>` : ''}</div>
-                                <div class="text-slate-600 text-xs mt-1 flex items-center"><i class="fa-regular fa-clock mr-1 text-amber-500"></i><strong class="text-slate-800 text-sm ml-0.5">${durationDisplay}</strong></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function addManualLog() {
-            const commentEl = document.getElementById('log-comment');
-            const subjEl = document.getElementById('log-subject');
-            const durEl = document.getElementById('log-duration');
-            const duration = parseInt(durEl.value);
-            if(!duration || duration <= 0) return alert('時間を入力してください。');
-
-            state.logs.push({ id: Date.now(), subjectId: subjEl.value, duration: duration, comment: commentEl.value.trim(), timestamp: Date.now(), bookName: null, bookImage: null });
-            saveState(); renderTimeline(); commentEl.value = ''; durEl.value = '';
-        }
-
-        function deleteLog(id) {
-            if(confirm('この記録を削除しますか？')) { state.logs = state.logs.filter(l => l.id !== id); saveState(); renderTimeline(); }
-        }
-
-        let timerInterval = null, timerMode = 'stopwatch', timerSeconds = 0, isTimerRunning = false;
-        function setTimerMode(mode) {
-            if(isTimerRunning) return;
-            timerMode = mode;
-            const btnSw = document.getElementById('btn-mode-sw'), btnPomo = document.getElementById('btn-mode-pomo');
-            if(mode === 'stopwatch') {
-                timerSeconds = 0;
-                btnSw.className = "px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm";
-                btnPomo.className = "px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm";
+        // プロフィールの保存反映
+        function updateProfile() {
+            const inputName = document.getElementById('input-username').value.trim();
+            if(!inputName) { alert("ユーザー名を入力してください。"); return; }
+            currentUsername = inputName;
+            document.getElementById('header-username').textContent = `${currentUsername} さん`;
+            const headerAvatar = document.getElementById('header-avatar');
+            if (uploadedImageDataUrl) {
+                headerAvatar.textContent = "";
+                headerAvatar.style.backgroundImage = `url('${uploadedImageDataUrl}')`;
             } else {
-                timerSeconds = 25 * 60;
-                btnSw.className = "px-3 py-1 text-xs rounded-full font-bold bg-slate-100 text-slate-600 shadow-sm";
-                btnPomo.className = "px-3 py-1 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm";
+                headerAvatar.textContent = currentUsername.charAt(0);
             }
+            alert("プロフィールを更新しました！");
+            switchTab('dashboard');
+        }
+
+        // タブ切り替え
+        function switchTab(tabId) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            const tabNameMap = {
+                'dashboard': 'ダッシュボード', 'bookshelf': '本棚', 'timeline': 'タイムライン', 'settings': 'アカウント設定'
+            };
+            const clickedItem = Array.from(navItems).find(item => item.textContent.includes(tabNameMap[tabId]));
+            if(clickedItem) clickedItem.classList.add('active');
+        }
+
+        /* ----------------------------------
+           新機能：タイマー・ストップウォッチ・ポモドーロ制御
+        ---------------------------------- */
+        let timerInterval = null;
+        let currentMode = 'stopwatch'; // 'stopwatch', 'pomo25', 'pomo5'
+        let timeInSeconds = 0; // ストップウォッチ用、またはカウントダウンの残り秒数
+        let currentMaterial = "";
+
+        // モードの切り替え（ポモドーロ or ストップウォッチ）
+        function changeTimerMode(mode) {
+            if (timerInterval) {
+                if(!confirm("現在計測中です。モードを切り替えると計測データがリセットされますがよろしいですか？")) {
+                    return;
+                }
+                clearInterval(timerInterval);
+                timerInterval = null;
+                document.getElementById('timer-btn').textContent = "スタート";
+                document.getElementById('timer-btn').style.backgroundColor = "var(--primary-color)";
+            }
+
+            currentMode = mode;
+            
+            // タブの見た目の切り替え
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            if(mode === 'stopwatch') document.getElementById('mode-stopwatch').classList.add('active');
+            if(mode === 'pomo25') document.getElementById('mode-pomo25').classList.add('active');
+            if(mode === 'pomo5') document.getElementById('mode-pomo5').classList.add('active');
+
+            // 初期時間のセット
+            if (mode === 'stopwatch') {
+                timeInSeconds = 0;
+            } else if (mode === 'pomo25') {
+                timeInSeconds = 25 * 60; // 25分
+            } else if (mode === 'pomo5') {
+                timeInSeconds = 5 * 60;  // 5分
+            }
+            
             updateTimerDisplay();
         }
 
-        function updateTimerDisplay() {
-            const hrs = Math.floor(timerSeconds / 3600), mins = Math.floor((timerSeconds % 3600) / 60), secs = timerSeconds % 60;
-            const timeString = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-            document.getElementById('timer-display').innerText = timeString;
-            document.title = isTimerRunning ? `(${timerMode === 'pomodoro' ? String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') : timeString}) My Study Log` : "My Study Log";
+        function startTimer(materialName) {
+            currentMaterial = materialName;
+            document.getElementById('timer-target').textContent = `対象: ${materialName}`;
+            
+            // 教材の横から起動された時は、デフォルトで「ストップウォッチ」か「ポモドーロ25分」のままリセット
+            if (currentMode === 'stopwatch') timeInSeconds = 0;
+            if (currentMode === 'pomo25') timeInSeconds = 25 * 60;
+            if (currentMode === 'pomo5') timeInSeconds = 5 * 60;
+
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            updateTimerDisplay();
+            toggleTimer();
         }
 
         function toggleTimer() {
-            const btn = document.getElementById('btn-timer-start');
-            if(isTimerRunning) {
-                clearInterval(timerInterval); isTimerRunning = false;
-                btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-                btn.className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md";
-                if((timerMode === 'stopwatch' && timerSeconds > 10) || (timerMode === 'pomodoro' && timerSeconds === 0)) {
-                    document.getElementById('timer-save-zone').classList.remove('hidden');
+            const btn = document.getElementById('timer-btn');
+            
+            if (timerInterval) {
+                // ストップ（一時停止・記録）時の処理
+                clearInterval(timerInterval);
+                timerInterval = null;
+                btn.textContent = "スタート";
+                btn.style.backgroundColor = "var(--primary-color)";
+                
+                // 計測完了によるポップアップ開閉ロジック
+                if (currentMode === 'stopwatch') {
+                    openRecordModal(currentMaterial || "自由計測", Math.round(timeInSeconds / 60));
+                } else if (currentMode === 'pomo25') {
+                    // 25分からどれだけ減ったかで勉強時間を逆算
+                    const elapsedMinutes = Math.round((25 * 60 - timeInSeconds) / 60);
+                    openRecordModal(currentMaterial || "ポモドーロ(集中)", elapsedMinutes || 25);
+                } else if (currentMode === 'pomo5') {
+                    alert("休憩時間の計測を一時停止しました。記録は行いません。");
                 }
-                updateTimerDisplay();
             } else {
-                isTimerRunning = true; document.getElementById('timer-save-zone').classList.add('hidden');
-                btn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-                btn.className = "w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl shadow-md";
+                // スタート時の処理
+                if(!currentMaterial && currentMode === 'stopwatch') {
+                    currentMaterial = "自主学習";
+                    document.getElementById('timer-target').textContent = `対象: 自主学習`;
+                } else if (!currentMaterial && (currentMode === 'pomo25' || currentMode === 'pomo5')) {
+                    currentMaterial = currentMode === 'pomo25' ? "ポモドーロ(集中)" : "ポモドーロ(休憩)";
+                    document.getElementById('timer-target').textContent = `対象: ${currentMaterial}`;
+                }
+
                 timerInterval = setInterval(() => {
-                    if(timerMode === 'stopwatch') { timerSeconds++; }
-                    else {
-                        if(timerSeconds > 0) { timerSeconds--; }
-                        else {
-                            clearInterval(timerInterval); isTimerRunning = false;
-                            alert('ポモドーロセッション終了！');
-                            timerSeconds = 25 * 60;
-                            btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-                            btn.className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md";
-                            document.getElementById('timer-save-zone').classList.remove('hidden');
+                    if (currentMode === 'stopwatch') {
+                        timeInSeconds++; // カウントアップ
+                    } else {
+                        timeInSeconds--; // カウントダウン
+                        if (timeInSeconds <= 0) {
+                            // タイマー終了時のポモドーロ連動
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            btn.textContent = "スタート";
+                            btn.style.backgroundColor = "var(--primary-color)";
+                            handleTimerExpiry();
+                            return;
                         }
                     }
                     updateTimerDisplay();
                 }, 1000);
+
+                btn.textContent = "ストップして記録";
+                btn.style.backgroundColor = "var(--danger-color)";
+            }
+        }
+
+        // タイマーが0になった時の自動連動
+        function handleTimerExpiry() {
+            updateTimerDisplay();
+            if (currentMode === 'pomo25') {
+                alert("🎉 25分間の集中セッションが終了しました！素晴らしいです。5分間の休憩に入りましょう！");
+                openRecordModal(currentMaterial, 25);
+                document.getElementById('record-memo').value = "ポモドーロ1セッション完了！完了！";
+                changeTimerMode('pomo5'); // 自動で5分休憩モードに切り替え
+            } else if (currentMode === 'pomo5') {
+                alert("⏱ 5分間の休憩が終了しました！次の25分集中セッションを始めましょう！");
+                changeTimerMode('pomo25'); // 自動で25分集中モードに戻す
             }
         }
 
         function resetTimer() {
-            clearInterval(timerInterval); isTimerRunning = false;
-            document.getElementById('btn-timer-start').innerHTML = `<i class="fa-solid fa-play"></i>`;
-            document.getElementById('btn-timer-start').className = "w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md";
-            document.getElementById('timer-save-zone').classList.add('hidden');
-            setTimerMode(timerMode);
+            clearInterval(timerInterval);
+            timerInterval = null;
+            changeTimerMode(currentMode); // 現在のモードの初期値に戻す
+            document.getElementById('timer-btn').textContent = "スタート";
+            document.getElementById('timer-btn').style.backgroundColor = "var(--primary-color)";
         }
 
-        function saveTimerLog() {
-            let loggedMinutes = timerMode === 'stopwatch' ? Math.max(1, Math.round(timerSeconds / 60)) : 25;
-            state.logs.push({ id: Date.now(), subjectId: document.getElementById('timer-subject').value, duration: loggedMinutes, comment: timerMode === 'pomodoro' ? 'ポモドーロ完了！' : 'タイマー計測', timestamp: Date.now(), bookName: null, bookImage: null });
-            saveState(); renderTimeline(); resetTimer(); switchTab('timeline');
+        function updateTimerDisplay() {
+            const hrs = String(Math.floor(timeInSeconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((timeInSeconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(timeInSeconds % 60).padStart(2, '0');
+            document.getElementById('timer-clock').textContent = `${hrs}:${mins}:${secs}`;
         }
 
-        function renderBooks() {
-            const list = document.getElementById('books-list');
-            if (state.books.length === 0) return list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">登録されている教材計画はありません。</div>`;
-
-            list.innerHTML = state.books.map(book => {
-                const today = new Date(), deadline = new Date(book.deadline);
-                const daysLeft = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 3600 * 24));
-                const remainingPages = Math.max(0, book.totalPages - (book.currentPages || 0));
-                let dailyPace = (daysLeft > 0 && remainingPages > 0) ? (remainingPages / daysLeft).toFixed(1) : remainingPages;
-                const progressPercent = Math.min(100, Math.round(((book.currentPages || 0) / book.totalPages) * 100));
-
-                return `
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                        <div class="flex space-x-3 items-start">
-                            <div onclick="openQuickLogModal(${book.id})" class="w-14 h-18 bg-slate-100 rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity active:scale-95 shrink-0 aspect-[3/4]" title="タップしてクイック記録">
-                                ${book.image ? `<img src="${book.image}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-book text-slate-300 text-lg mb-1"></i><span class="text-[8px] text-slate-400 text-center font-bold px-1 leading-tight">タップで<br>記録</span>`}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex justify-between items-start">
-                                    <h4 onclick="openQuickLogModal(${book.id})" class="font-bold text-sm text-slate-800 truncate cursor-pointer hover:text-blue-500">${escapeHtml(book.name)}</h4>
-                                    <button onclick="deleteBook(${book.id})" class="text-slate-300 hover:text-red-400 text-xs pl-2"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                                <p class="text-[10px] text-slate-400 mt-0.5">期限: ${book.deadline} (${daysLeft > 0 ? `あと ${daysLeft} 日` : '期限超過'})</p>
-                                <div class="mt-2">
-                                    <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>進捗: ${book.currentPages || 0} / ${book.totalPages} P</span><span>${progressPercent}%</span></div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-blue-500 h-full" style="width: ${progressPercent}%"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-slate-50 p-2 rounded-lg flex justify-between items-center text-xs">
-                            <span class="text-slate-500 font-medium"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>目標ペース:</span>
-                            <span class="font-bold text-slate-800">${remainingPages === 0 ? '🎉 完了！' : `1日あたり ${dailyPace} P`}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 pt-1">
-                            <input type="number" id="update-page-${book.id}" placeholder="現在P" class="text-xs border rounded px-2 py-1 w-20 text-center" value="${book.currentPages || 0}">
-                            <button onclick="updateBookProgress(${book.id})" class="bg-slate-200 text-slate-700 font-bold text-xs px-3 py-1 rounded hover:bg-slate-300 flex-1">進捗を更新</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        function openRecordModal(materialName, defaultMinutes = 30) {
+            currentMaterial = materialName;
+            document.getElementById('record-form-box').style.display = 'block';
+            document.getElementById('record-title').textContent = `${materialName} の記録`;
+            document.getElementById('record-duration').value = defaultMinutes <= 0 ? 1 : defaultMinutes; // 最低1分
+            document.getElementById('record-form-box').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- 📸 画像自動リサイズ・圧縮ロジック ---
-        function addBook() {
-            const nameEl = document.getElementById('book-name');
-            const pagesEl = document.getElementById('book-pages');
-            const deadlineEl = document.getElementById('book-deadline');
-            const imageEl = document.getElementById('book-image');
+        // 記録の保存処理
+        function saveLog() {
+            const duration = document.getElementById('record-duration').value;
+            const amount = document.getElementById('record-amount').value.trim();
+            const memo = document.getElementById('record-memo').value.trim();
+            
+            if(!duration || duration <= 0) { alert("勉強時間を入力してください。"); return; }
 
-            if(!nameEl.value || !pagesEl.value || !deadlineEl.value) return alert('必要項目を入力してください。');
+            const timelineList = document.getElementById('timeline-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'timeline-item';
 
-            const file = imageEl.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        // スマホの巨大な写真を、アプリ表示に最適な横幅300pxに自動縮小
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 300;
-                        const scale = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scale;
-
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                        // 画質を少し落としてデータサイズを1/50程度に激しく軽量化 (画質0.6)
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                        
-                        saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, compressedBase64);
-                        imageEl.value = '';
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+            let avatarStyle = ""; let avatarContent = "";
+            if (uploadedImageDataUrl) {
+                avatarStyle = `style="background-image: url('${uploadedImageDataUrl}');"`;
             } else {
-                saveBookData(nameEl.value.trim(), parseInt(pagesEl.value), deadlineEl.value, null);
+                avatarStyle = `style="background-color: var(--primary-light); color: var(--primary-color);"`;
+                avatarContent = currentUsername.charAt(0);
             }
 
-            function saveBookData(name, totalPages, deadline, imageData) {
-                state.books.push({ id: Date.now(), name: name, totalPages: totalPages, currentPages: 0, deadline: deadline, image: imageData });
-                saveState(); renderBooks();
-                nameEl.value = ''; pagesEl.value = ''; deadlineEl.value = '';
-            }
-        }
+            const progressText = amount ? `<span style="color: var(--primary-color);">📈 進捗: ${amount} ページ消化</span>` : `<span style="color: var(--text-muted);">⏱ 時間のみ記録</span>`;
+            const memoText = memo ? `<p style="margin-top: 6px; color: var(--text-main); font-size: 13px; background: #ffffff; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);"> 📝 メモ: ${memo}</p>` : '';
 
-        function updateBookProgress(id) {
-            const input = document.getElementById(`update-page-${id}`), book = state.books.find(b => b.id === id);
-            if(book && input) {
-                const val = parseInt(input.value);
-                if(val >= 0 && val <= book.totalPages) { book.currentPages = val; saveState(); renderBooks(); }
-                else alert('正しい範囲を入力してください。');
-            }
-        }
-
-        function deleteBook(id) {
-            if(confirm('この教材を削除しますか？')) { state.books = state.books.filter(b => b.id !== id); saveState(); renderBooks(); }
-        }
-
-        function openQuickLogModal(bookId) {
-            const book = state.books.find(b => b.id === bookId);
-            if (!book) return;
-            currentActiveBookId = bookId;
-            document.getElementById('modal-book-title').innerText = `【${book.name}】のクイック記録`;
-            const previewEl = document.getElementById('modal-book-preview'), imgEl = document.getElementById('modal-img');
-            if (book.image) { imgEl.src = book.image; previewEl.classList.remove('hidden'); }
-            else { previewEl.classList.add('hidden'); }
-            document.getElementById('modal-log-duration').value = ''; document.getElementById('modal-log-comment').value = '';
-            document.getElementById('quick-log-modal').classList.remove('hidden');
-        }
-
-        function closeQuickLogModal() { document.getElementById('quick-log-modal').classList.add('hidden'); currentActiveBookId = null; }
-
-        function submitQuickLog() {
-            const book = state.books.find(b => b.id === currentActiveBookId);
-            if (!book) return;
-            const durationEl = document.getElementById('modal-log-duration'), duration = parseInt(durationEl.value);
-            const commentEl = document.getElementById('modal-log-comment'), subjectId = document.getElementById('modal-log-subject').value;
-            if (!duration || duration <= 0) return alert('時間を入力してください。');
-
-            state.logs.push({ id: Date.now(), subjectId: subjectId, duration: duration, comment: commentEl.value.trim() || `${book.name}で勉強！`, timestamp: Date.now(), bookName: book.name, bookImage: book.image || null });
-            saveState(); renderTimeline(); closeQuickLogModal(); switchTab('timeline');
-        }
-
-        let chartInstance = null;
-        function initChart() {
-            const ctx = document.getElementById('deviationChart').getContext('2d');
-            const sortedExams = [...state.exams].sort((a,b) => a.id - b.id);
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: sortedExams.map(e => e.name),
-                    datasets: [{ label: '偏差値推移', data: sortedExams.map(e => e.deviation), borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderWidth: 3, pointBackgroundColor: '#4f46e5', pointRadius: 5, tension: 0.2 }]
-                },
-                options: { responsive: true, scales: { y: { min: 30, max: 80, ticks: { stepSize: 5 } } }, plugins: { legend: { display: false } } }
-            });
-        }
-
-        function updateChart() {
-            if(!chartInstance) return;
-            const sortedExams = [...state.exams].sort((a,b) => a.id - b.id);
-            chartInstance.data.labels = sortedExams.map(e => e.name); chartInstance.data.datasets[0].data = sortedExams.map(e => e.deviation); chartInstance.update();
-        }
-
-        function renderExamList() {
-            const container = document.getElementById('exam-list-items');
-            if(state.exams.length === 0) return container.innerHTML = `<p class="text-xs text-slate-400 py-2">模試結果が登録されていません。</p>`;
-            const sortedExams = [...state.exams].sort((a,b) => b.id - a.id);
-            container.innerHTML = sortedExams.map(e => `
-                <div class="flex justify-between items-center py-2 text-sm">
-                    <span class="text-slate-700 font-medium">${escapeHtml(e.name)}</span>
-                    <div class="flex items-center space-x-3">
-                        <span class="font-bold text-indigo-600 font-mono">${e.deviation.toFixed(1)}</span>
-                        <button onclick="deleteExam(${e.id})" class="text-slate-300 hover:text-red-400 text-xs"><i class="fa-solid fa-xs fa-trash"></i></button>
+            newItem.innerHTML = `
+                <div class="timeline-header">
+                    <div class="timeline-user">
+                        <div class="timeline-avatar" ${avatarStyle}>${avatarContent}</div>
+                        <strong>${currentUsername}</strong>
                     </div>
+                    <span>たった今</span>
                 </div>
-            `).join('');
-        }
+                <div class="timeline-content">
+                    <strong>${currentMaterial}</strong> を <strong>${duration}分</strong> 勉強しました！<br>
+                    ${progressText}
+                    ${memoText}
+                </div>
+            `;
+            timelineList.insertBefore(newItem, timelineList.firstChild);
 
-        function addExamRecord() {
-            const nameEl = document.getElementById('exam-name'), devEl = document.getElementById('exam-deviation'), devValue = parseFloat(devEl.value);
-            if(!nameEl.value || isNaN(devValue)) return alert('模試名と偏差値を入力してください。');
-            state.exams.push({ id: Date.now(), name: nameEl.value.trim(), deviation: devValue });
-            saveState(); updateChart(); renderExamList(); nameEl.value = ''; devEl.value = '';
-        }
-
-        function deleteExam(id) { state.exams = state.exams.filter(e => e.id !== id); saveState(); updateChart(); renderExamList(); }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            alert("記録が完了しました！");
+            document.getElementById('today-time').textContent = `1時間${parseInt(duration) + 15}分`;
+            document.getElementById('record-form-box').style.display = 'none';
+            document.getElementById('record-amount').value = '';
+            document.getElementById('record-memo').value = '';
+            resetTimer();
+            switchTab('timeline');
         }
     </script>
 </body>
