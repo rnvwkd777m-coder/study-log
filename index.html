@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SyncStudy</title>
+    <title>SyncStudy Pro - マイ学習管理アプリ</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -30,11 +30,20 @@
             background-color: var(--background-color);
             color: var(--text-main);
             display: flex;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* サイドナビゲーション */
+        /* --- スマホ縦画面（レスポンシブ）対応レイアウト --- */
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* サイドバー：デフォルトはPCサイズ */
         .sidebar {
             width: 260px;
             background-color: #0f172a;
@@ -42,15 +51,13 @@
             display: flex;
             flex-direction: column;
             padding: 24px;
+            z-index: 10;
         }
 
         .sidebar h1 {
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             background: linear-gradient(to right, #38bdf8, #818cf8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -84,7 +91,7 @@
             border-left: 4px solid var(--primary-color);
         }
 
-        /* メインコンテンツエリア */
+        /* メインコンテンツ */
         .main-container {
             flex: 1;
             display: flex;
@@ -94,7 +101,7 @@
 
         header {
             background-color: var(--card-background);
-            padding: 16px 32px;
+            padding: 16px 24px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -108,11 +115,6 @@
             cursor: pointer;
             padding: 4px 8px;
             border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .user-profile:hover {
-            background-color: #f1f5f9;
         }
 
         .avatar {
@@ -133,7 +135,7 @@
         }
 
         .content-body {
-            padding: 32px;
+            padding: 20px;
             max-width: 1200px;
             width: 100%;
             margin: 0 auto;
@@ -147,18 +149,26 @@
             display: block;
         }
 
+        /* グリッドシステム：スマホ時は1カラム、PC時は2カラム */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
 
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        /* カードスタイル */
         .card {
             background-color: var(--card-background);
             border-radius: 12px;
             border: 1px solid var(--border-color);
-            padding: 24px;
-            margin-bottom: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
@@ -175,30 +185,35 @@
         .stats-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .stat-box {
             background-color: var(--card-background);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
+            padding: 12px 6px;
             text-align: center;
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: var(--primary-color);
-            margin-top: 8px;
+            margin-top: 4px;
+        }
+
+        @media (min-width: 480px) {
+            .stat-value { font-size: 22px; }
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
         }
 
+        /* 教材リスト */
         .task-list {
             display: flex;
             flex-direction: column;
@@ -207,68 +222,68 @@
 
         .task-item {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
             padding: 16px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             background-color: #fafafa;
         }
 
-        .task-info h4 {
-            font-size: 15px;
-            margin-bottom: 4px;
+        @media (min-width: 480px) {
+            .task-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
         }
 
-        .task-meta {
-            font-size: 12px;
-            color: var(--text-muted);
+        .book-cover-thumbnail {
+            width: 50px;
+            height: 65px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .task-info {
             display: flex;
             gap: 12px;
-        }
-
-        .badge-danger {
-            background-color: #fee2e2;
-            color: var(--danger-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
+            align-items: center;
         }
 
         .task-actions {
             display: flex;
             gap: 8px;
+            width: 100%;
+        }
+
+        @media (min-width: 480px) {
+            .task-actions { width: auto; }
+        }
+
+        .task-actions .btn {
+            flex: 1;
         }
 
         .btn {
-            padding: 8px 16px;
+            padding: 10px 16px;
             border-radius: 6px;
             border: none;
             cursor: pointer;
             font-weight: 500;
             font-size: 14px;
             transition: background-color 0.2s;
+            text-align: center;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: #4338ca; }
+        .btn-secondary { background-color: var(--primary-light); color: var(--primary-color); }
 
-        .btn-primary:hover {
-            background-color: #4338ca;
-        }
-
-        .btn-secondary {
-            background-color: var(--primary-light);
-            color: var(--primary-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: #c7d2fe;
-        }
-
-        /* タイマーモード切り替えタブ */
+        /* タイマーコントロール */
         .timer-modes {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -276,19 +291,17 @@
             background-color: #f1f5f9;
             padding: 4px;
             border-radius: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .mode-btn {
-            padding: 6px;
+            padding: 8px 4px;
             font-size: 12px;
             border: none;
             border-radius: 6px;
             background: transparent;
             cursor: pointer;
             color: var(--text-muted);
-            font-weight: 500;
-            transition: all 0.2s;
         }
 
         .mode-btn.active {
@@ -297,541 +310,675 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        .timer-display {
-            font-size: 48px;
-            font-weight: bold;
-            text-align: center;
-            font-family: monospace;
-            margin: 12px 0;
-            color: #0f172a;
-        }
-
-        .timer-controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--text-main);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .optional-badge {
-            font-size: 11px;
-            background-color: #e2e8f0;
-            color: #475569;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            font-weight: normal;
-        }
-
-        /* 画像アップロード周り */
-        .upload-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        
-        .preview-avatar {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background-color: var(--primary-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            border: 2px solid var(--border-color);
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .file-input-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        /* タイムライン */
-        .timeline-item {
-            border-left: 2px solid var(--border-color);
-            padding-left: 16px;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -6px;
-            top: 4px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-        }
-
-        .timeline-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            align-items: center;
-        }
-
-        .timeline-user {
+        .custom-time-input-group {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 6px;
         }
 
-        .timeline-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
+        .timer-display {
+            font-size: 44px;
+            font-weight: bold;
+            text-align: center;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; }
+
+        /* 画像アップロード関連 */
+        .image-uploader-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 6px;
+        }
+
+        .preview-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 1px dashed var(--border-color);
+            background-size: cover;
+            background-position: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            color: var(--text-muted);
             font-size: 12px;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background-color: #f8fafc;
         }
 
-        .timeline-content {
-            background-color: #f8fafc;
-            padding: 12px;
+        .attached-log-img {
+            max-width: 100%;
+            max-height: 200px;
             border-radius: 6px;
-            font-size: 14px;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* スマホ用ボトムナビゲーション（画面サイズが小さい時だけ表示） */
+        .bottom-nav {
+            display: none;
+            background-color: #0f172a;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            grid-template-columns: repeat(4, 1fr);
+            z-index: 100;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .bottom-nav-item.active {
+            color: white;
+            background-color: #1e293b;
+        }
+
+        /* レスポンシブ切り替え（スマホサイズ） */
+        @media (max-width: 767px) {
+            .sidebar { display: none; }
+            .bottom-nav { display: grid; }
+            body { padding-bottom: 60px; }
+            header { padding: 12px 16px; }
+            .content-body { padding: 12px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h1>SyncStudy</h1>
-        <ul class="nav-menu">
-            <li class="nav-item active" onclick="switchTab('dashboard')">ダッシュボード</li>
-            <li class="nav-item" onclick="switchTab('bookshelf')">本棚・目標設定</li>
-            <li class="nav-item" onclick="switchTab('timeline')">タイムライン</li>
-            <li class="nav-item" onclick="switchTab('settings')">アカウント設定</li>
-        </ul>
-    </div>
+    <div class="app-container">
+        <div class="sidebar">
+            <h1>SyncStudy Pro</h1>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-tab="dashboard" onclick="handleTabClick('dashboard')">ダッシュボード</li>
+                <li class="nav-item" data-tab="bookshelf" onclick="handleTabClick('bookshelf')">教材の管理登録</li>
+                <li class="nav-item" data-tab="timeline" onclick="handleTabClick('timeline')">タイムライン</li>
+                <li class="nav-item" data-tab="settings" onclick="handleTabClick('settings')">プロフィール設定</li>
+            </ul>
+        </div>
 
-    <div class="main-container">
-        <header>
-            <h2>マイページ</h2>
-            <div class="user-profile" onclick="switchTab('settings')">
-                <div class="avatar" id="header-avatar">開</div>
-                <span class="user-name" id="header-username">開発 太郎 さん</span>
-            </div>
-        </header>
-
-        <div class="content-body">
-            
-            <div id="dashboard" class="tab-content active">
-                <div class="stats-container">
-                    <div class="stat-box">
-                        <div class="stat-label">本日の勉強時間</div>
-                        <div class="stat-value" id="today-time">1時間15分</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">本日のノルマ達成率</div>
-                        <div class="stat-value" style="color: var(--success-color);">65%</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">目標期日までの残日数</div>
-                        <div class="stat-value" style="color: var(--warning-color);">24日</div>
-                    </div>
+        <div class="main-container">
+            <header>
+                <h3 id="page-title">ダッシュボード</h3>
+                <div class="user-profile" onclick="switchTab('settings')">
+                    <div class="avatar" id="header-avatar">開</div>
+                    <span class="user-name" id="header-username" style="font-size: 14px; font-weight: bold;">ユーザーさん</span>
                 </div>
+            </header>
 
-                <div class="dashboard-grid">
-                    <div>
-                        <div class="card">
-                            <div class="card-title">今日の学習タスク（自動逆算ノルマ）</div>
-                            <div class="task-list">
-                                <div class="task-item">
-                                    <div class="task-info">
-                                        <h4>青チャート 数学ⅠA</h4>
-                                        <div class="task-meta">
-                                            <span>目標: 6/30まで</span>
-                                            <span class="badge-danger">遅れあり +2p</span>
-                                            <span style="color: var(--primary-color); font-weight: bold;">本日のノルマ: 7ページ (p.45〜51)</span>
-                                        </div>
+            <div class="content-body">
+                
+                <div id="dashboard" class="tab-content active">
+                    <div class="stats-container">
+                        <div class="stat-box">
+                            <div class="stat-label">本日の合計</div>
+                            <div class="stat-value" id="today-time">0分</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">登録教材</div>
+                            <div class="stat-value" id="total-books-stat">0冊</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">総記録数</div>
+                            <div class="stat-value" id="total-logs-stat">0回</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div>
+                            <div class="card">
+                                <div class="card-title">登録したマイ教材</div>
+                                <div class="task-list" id="active-books-list">
                                     </div>
-                                    <div class="task-actions">
-                                        <button class="btn btn-secondary" onclick="startTimer('青チャート 数学ⅠA')">タイマー起動</button>
-                                        <button class="btn btn-primary" onclick="openRecordModal('青チャート 数学ⅠA')">手動記録</button>
-                                    </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card">
+                                <div class="card-title">タイマーコンソール</div>
+                                
+                                <div class="timer-modes">
+                                    <button class="mode-btn active" id="btn-mode-sw" onclick="setTimerMode('stopwatch')">ストップウォッチ</button>
+                                    <button class="mode-btn" id="btn-mode-pomo" onclick="setTimerMode('countdown')">タイマー（分数指定）</button>
+                                </div>
+
+                                <div class="custom-time-input-group" id="custom-time-setting" style="display: none;">
+                                    <label style="font-size: 13px; font-weight: bold;">タイマー設定:</label>
+                                    <input type="number" class="form-control" id="input-custom-minutes" value="25" min="1" max="180" style="padding: 4px 8px; width: 70px; text-align: center;">
+                                    <span style="font-size: 13px;">分</span>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="applyCustomMinutes()">セット</button>
+                                </div>
+
+                                <div style="text-align: center; color: var(--text-muted); font-size: 13px; font-weight: bold;" id="timer-target">教材を選んでスタート</div>
+                                <div class="timer-display" id="timer-clock">00:00:00</div>
+                                <div class="timer-controls">
+                                    <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">スタート</button>
+                                    <button class="btn btn-secondary" onclick="resetTimer()">リセット</button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div class="card">
-                            <div class="card-title">計測コンソール</div>
-                            
-                            <div class="timer-modes">
-                                <button class="mode-btn active" id="mode-stopwatch" onclick="changeTimerMode('stopwatch')">ストップウォッチ</button>
-                                <button class="mode-btn" id="mode-pomo25" onclick="changeTimerMode('pomo25')">集中 (25分)</button>
-                                <button class="mode-btn" id="mode-pomo5" onclick="changeTimerMode('pomo5')">休憩 (5分)</button>
-                            </div>
-
-                            <div style="text-align: center; color: var(--text-muted); font-size: 14px;" id="timer-target">教材を選択してください</div>
-                            <div class="timer-display" id="timer-clock">00:00:00</div>
-                            <div class="timer-controls">
-                                <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">スタート</button>
-                                <button class="btn btn-secondary" onclick="resetTimer()">リセット</button>
-                            </div>
-                        </div>
-
-                        <div class="card" id="record-form-box" style="display:none; border-color: var(--primary-color);">
-                            <div class="card-title" id="record-title">学習内容の記録</div>
-                            <div class="form-group">
-                                <label>勉強時間 (分)</label>
-                                <input type="number" class="form-control" id="record-duration" value="30">
-                            </div>
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center;">
-                                    進んだ量 (ページ / 問)
-                                    <span class="optional-badge">スキップ可</span>
-                                </label>
-                                <input type="number" class="form-control" id="record-amount" placeholder="入力しなくても記録できます">
-                            </div>
-                            <div class="form-group">
-                                <label>学習メモ・一言コメント</label>
-                                <textarea class="form-control" id="record-memo" rows="3" placeholder="難しかったところや、ポモドーロの消化セッション数などをメモにどうぞ！" style="resize: none; font-family: inherit;"></textarea>
-                            </div>
-                            <button class="btn btn-primary" style="width:100%" onclick="saveLog()">この内容で記録・タイムラインに投稿</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="bookshelf" class="tab-content">
-                <div class="card"><div class="card-title">新規教材の追加</div><p style="color: var(--text-muted);">（デモ用の画面です）</p></div>
-            </div>
-
-            <div id="timeline" class="tab-content">
-                <div class="card">
-                    <div class="card-title">タイムライン (マルチユーザー共有フィード)</div>
-                    <div id="timeline-list">
-                        <div class="timeline-item">
-                            <div class="timeline-header">
-                                <div class="timeline-user">
-                                    <div class="timeline-avatar" style="background-color: #fee2e2; color: #ef4444;">A</div>
-                                    <strong>受験生Aさん</strong>
+                            <div class="card" id="record-form-box" style="display:none; border-color: var(--primary-color);">
+                                <div class="card-title" id="record-title">学習内容の記録</div>
+                                <div class="form-group">
+                                    <label>勉強時間 (分)</label>
+                                    <input type="number" class="form-control" id="record-duration" value="25">
                                 </div>
-                                <span>10分前</span>
-                            </div>
-                            <div class="timeline-content">
-                                <strong>青チャート 数学ⅠA</strong> を <strong>1時間15分</strong> 勉強しました！<br>
-                                <span style="color: var(--primary-color);">📈 進捗: 7ページ消化</span>
+                                <div class="form-group">
+                                    <label>進んだ量 <span class="optional-badge">任意</span></label>
+                                    <input type="text" class="form-control" id="record-amount" placeholder="例: p.20〜25、10問解いた など">
+                                </div>
+                                <div class="form-group">
+                                    <label>学習メモ・気づき</label>
+                                    <textarea class="form-control" id="record-memo" rows="3" placeholder="ここにつまずいた、集中できた！など自由に入力" style="resize: none; font-family: inherit;"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>メモに画像を貼る <span class="optional-badge">任意</span></label>
+                                    <div class="image-uploader-box">
+                                        <div class="preview-box" id="log-image-preview">なし</div>
+                                        <input type="file" id="log-image-file" accept="image/*" onchange="previewLogImage(this)" style="font-size: 12px; width: 100%;">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" style="width:100%" onclick="saveLog()">タイムラインへ保存・記録する</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="settings" class="tab-content">
-                <div class="card" style="max-width: 600px;">
-                    <div class="card-title">ユーザープロフィールの編集</div>
-                    <div class="form-group">
-                        <label for="input-username">ユーザー名</label>
-                        <input type="text" class="form-control" id="input-username" value="開発 太郎">
-                    </div>
-                    <div class="form-group">
-                        <label>プロフィール画像</label>
-                        <div class="upload-container">
-                            <div class="preview-avatar" id="upload-preview">開</div>
-                            <div class="file-input-wrapper">
-                                <button class="btn btn-secondary">写真フォルダから選択</button>
-                                <input type="file" id="image-file-input" accept="image/*" onchange="previewImage(this)">
+                <div id="bookshelf" class="tab-content">
+                    <div class="card" style="max-width: 600px;">
+                        <div class="card-title">新しい教材のリアル登録</div>
+                        <div class="form-group">
+                            <label>教材名・参考書名</label>
+                            <input type="text" class="form-control" id="book-title-input" placeholder="例: ターゲット1900、速読英単語など">
+                        </div>
+                        <div class="form-group">
+                            <label>教材の表紙画像</label>
+                            <div class="image-uploader-box">
+                                <div class="preview-box" id="book-cover-preview" style="width: 70px; height: 90px;">なし</div>
+                                <input type="file" id="book-cover-file" accept="image/*" onchange="previewBookCover(this)">
                             </div>
                         </div>
+                        <button class="btn btn-primary" style="margin-top: 12px; width: 100%;" onclick="addNewBook()">この教材を自分の本棚に登録する</button>
                     </div>
-                    <button class="btn btn-primary" style="margin-top: 24px;" onclick="updateProfile()">設定を保存して反映</button>
                 </div>
-            </div>
 
+                <div id="timeline" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">タイムライン（あなたの学習歴史履歴）</div>
+                        <div id="timeline-list">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="settings" class="tab-content">
+                    <div class="card" style="max-width: 600px;">
+                        <div class="card-title">アカウント設定</div>
+                        <div class="form-group">
+                            <label>ユーザー名</label>
+                            <input type="text" class="form-control" id="input-username" value="マイユーザー">
+                        </div>
+                        <div class="form-group">
+                            <label>プロフィールアバター</label>
+                            <div class="upload-container">
+                                <div class="preview-avatar" id="upload-preview" style="width: 60px; height: 60px;">ユ</div>
+                                <input type="file" id="profile-image-file" accept="image/*" onchange="previewProfileImage(this)" style="font-size: 13px;">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 20px; width: 100%;" onclick="updateProfile()">設定を完全保存する</button>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <script>
-        // グローバル状態
-        let currentUsername = "開発 太郎";
-        let uploadedImageDataUrl = "";
+    <div class="bottom-nav">
+        <div class="bottom-nav-item active" id="bnav-dashboard" onclick="handleTabClick('dashboard')"><div>🏠</div>ダッシュ</div>
+        <div class="bottom-nav-item" id="bnav-bookshelf" onclick="handleTabClick('bookshelf')"><div>📚</div>教材登録</div>
+        <div class="bottom-nav-item" id="bnav-timeline" onclick="handleTabClick('timeline')"><div>⏱</div>履歴タイム</div>
+        <div class="bottom-nav-item" id="bnav-settings" onclick="handleTabClick('settings')"><div>👤</div>設定</div>
+    </div>
 
-        // 画像選択時のプレビュー
-        function previewImage(input) {
+    <script>
+        /* ----------------------------------
+           データの永続化（LocalStorage管理）
+        ---------------------------------- */
+        let appState = {
+            username: "マイユーザー",
+            userAvatar: "", // Base64データ
+            books: [],      // 教材配列
+            logs: []        // 記録配列
+        };
+
+        // アプリ起動時にLocalStorageからデータをロード
+        window.onload = function() {
+            const savedData = localStorage.getItem('sync_study_pro_data');
+            if (savedData) {
+                try {
+                    appState = JSON.parse(savedData);
+                } catch(e) {
+                    console.error("データの読み込みに失敗しました", e);
+                }
+            }
+            
+            // 初期データの救済（空っぽならサンプルを1つ）
+            if (appState.books.length === 0) {
+                appState.books.push({ id: 1, title: "初期教材（ここをタップして計測）", cover: "" });
+            }
+
+            // 画面に適用
+            applyProfileDOM();
+            renderBooks();
+            renderTimeline();
+            updateStatistics();
+        };
+
+        function saveStateToLocalStorage() {
+            localStorage.setItem('sync_study_pro_data', JSON.stringify(appState));
+        }
+
+        /* ----------------------------------
+           プロフィール関連処理
+        ---------------------------------- */
+        let tempProfileImage = "";
+        function previewProfileImage(input) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    uploadedImageDataUrl = e.target.result;
+                    tempProfileImage = e.target.result;
                     const preview = document.getElementById('upload-preview');
                     preview.textContent = "";
-                    preview.style.backgroundImage = `url('${uploadedImageDataUrl}')`;
+                    preview.style.backgroundImage = `url('${tempProfileImage}')`;
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        // プロフィールの保存反映
         function updateProfile() {
             const inputName = document.getElementById('input-username').value.trim();
-            if(!inputName) { alert("ユーザー名を入力してください。"); return; }
-            currentUsername = inputName;
-            document.getElementById('header-username').textContent = `${currentUsername} さん`;
-            const headerAvatar = document.getElementById('header-avatar');
-            if (uploadedImageDataUrl) {
-                headerAvatar.textContent = "";
-                headerAvatar.style.backgroundImage = `url('${uploadedImageDataUrl}')`;
-            } else {
-                headerAvatar.textContent = currentUsername.charAt(0);
+            if(!inputName) { alert("名前を入力してください"); return; }
+            appState.username = inputName;
+            if (tempProfileImage) {
+                appState.userAvatar = tempProfileImage;
             }
-            alert("プロフィールを更新しました！");
+            saveStateToLocalStorage();
+            applyProfileDOM();
+            alert("プロフィールをスマホに保存しました！");
             switchTab('dashboard');
         }
 
-        // タブ切り替え
-        function switchTab(tabId) {
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => item.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+        function applyProfileDOM() {
+            document.getElementById('header-username').textContent = `${appState.username} さん`;
+            document.getElementById('input-username').value = appState.username;
             
-            const tabNameMap = {
-                'dashboard': 'ダッシュボード', 'bookshelf': '本棚', 'timeline': 'タイムライン', 'settings': 'アカウント設定'
-            };
-            const clickedItem = Array.from(navItems).find(item => item.textContent.includes(tabNameMap[tabId]));
-            if(clickedItem) clickedItem.classList.add('active');
+            const headerAvatar = document.getElementById('header-avatar');
+            const settingsPreview = document.getElementById('upload-preview');
+            
+            if (appState.userAvatar) {
+                headerAvatar.textContent = "";
+                headerAvatar.style.backgroundImage = `url('${appState.userAvatar}')`;
+                settingsPreview.textContent = "";
+                settingsPreview.style.backgroundImage = `url('${appState.userAvatar}')`;
+            } else {
+                headerAvatar.textContent = appState.username.charAt(0);
+                settingsPreview.textContent = appState.username.charAt(0);
+                headerAvatar.style.backgroundImage = "none";
+                settingsPreview.style.backgroundImage = "none";
+            }
         }
 
         /* ----------------------------------
-           新機能：タイマー・ストップウォッチ・ポモドーロ制御
+           教材登録（本棚）の処理
         ---------------------------------- */
-        let timerInterval = null;
-        let currentMode = 'stopwatch'; // 'stopwatch', 'pomo25', 'pomo5'
-        let timeInSeconds = 0; // ストップウォッチ用、またはカウントダウンの残り秒数
-        let currentMaterial = "";
-
-        // モードの切り替え（ポモドーロ or ストップウォッチ）
-        function changeTimerMode(mode) {
-            if (timerInterval) {
-                if(!confirm("現在計測中です。モードを切り替えると計測データがリセットされますがよろしいですか？")) {
-                    return;
-                }
-                clearInterval(timerInterval);
-                timerInterval = null;
-                document.getElementById('timer-btn').textContent = "スタート";
-                document.getElementById('timer-btn').style.backgroundColor = "var(--primary-color)";
+        let tempBookCover = "";
+        function previewBookCover(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempBookCover = e.target.result;
+                    const preview = document.getElementById('book-cover-preview');
+                    preview.textContent = "";
+                    preview.style.backgroundImage = `url('${tempBookCover}')`;
+                };
+                reader.readAsDataURL(file);
             }
-
-            currentMode = mode;
-            
-            // タブの見た目の切り替え
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            if(mode === 'stopwatch') document.getElementById('mode-stopwatch').classList.add('active');
-            if(mode === 'pomo25') document.getElementById('mode-pomo25').classList.add('active');
-            if(mode === 'pomo5') document.getElementById('mode-pomo5').classList.add('active');
-
-            // 初期時間のセット
-            if (mode === 'stopwatch') {
-                timeInSeconds = 0;
-            } else if (mode === 'pomo25') {
-                timeInSeconds = 25 * 60; // 25分
-            } else if (mode === 'pomo5') {
-                timeInSeconds = 5 * 60;  // 5分
-            }
-            
-            updateTimerDisplay();
         }
 
-        function startTimer(materialName) {
-            currentMaterial = materialName;
-            document.getElementById('timer-target').textContent = `対象: ${materialName}`;
-            
-            // 教材の横から起動された時は、デフォルトで「ストップウォッチ」か「ポモドーロ25分」のままリセット
-            if (currentMode === 'stopwatch') timeInSeconds = 0;
-            if (currentMode === 'pomo25') timeInSeconds = 25 * 60;
-            if (currentMode === 'pomo5') timeInSeconds = 5 * 60;
+        function addNewBook() {
+            const titleInput = document.getElementById('book-title-input');
+            const title = titleInput.value.trim();
+            if (!title) { alert("教材名を入力してください！"); return; }
 
-            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-            updateTimerDisplay();
-            toggleTimer();
+            const newBook = {
+                id: Date.now(), // 簡易的な一意のID
+                title: title,
+                cover: tempBookCover // Base64
+            };
+
+            appState.books.push(newBook);
+            saveStateToLocalStorage();
+            
+            // リセット
+            titleInput.value = "";
+            tempBookCover = "";
+            const preview = document.getElementById('book-cover-preview');
+            preview.textContent = "なし";
+            preview.style.backgroundImage = "none";
+
+            renderBooks();
+            updateStatistics();
+            alert(`「${title}」を登録しました！ダッシュボードから選んで測れるようになります。`);
+            switchTab('dashboard');
+        }
+
+        function renderBooks() {
+            const container = document.getElementById('active-books-list');
+            container.innerHTML = "";
+
+            if(appState.books.length === 0) {
+                container.innerHTML = "<p style='color:var(--text-muted); font-size:14px;'>登録された教材がありません。「教材登録」から追加しましょう！</p>";
+                return;
+            }
+
+            appState.books.forEach(book => {
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                
+                let coverStyle = book.cover ? `style="background-image: url('${book.cover}'); border:none;"` : "";
+                let coverContent = book.cover ? "" : "📘";
+
+                item.innerHTML = `
+                    <div class="task-info">
+                        <div class="book-cover-thumbnail" ${coverStyle}>${coverContent}</div>
+                        <div>
+                            <h4 style="font-size:15px; color:var(--text-main);">${book.title}</h4>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="selectBookForTimer('${book.title.replace(/'/g, "\\'")}')">選択して測る</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        /* ----------------------------------
+           高機能タイマー・ストップウォッチシステム
+        ---------------------------------- */
+        let timerInterval = null;
+        let timerMode = 'stopwatch'; // 'stopwatch' or 'countdown'
+        let secondsLeftOrElapsed = 0;
+        let selectedMinutes = 25; // デフォルトのタイマー分数
+        let currentBookTitle = "";
+
+        function setTimerMode(mode) {
+            if(timerInterval) { alert("計測中はモード変更できません。一度ストップしてください。"); return; }
+            timerMode = mode;
+            
+            document.getElementById('btn-mode-sw').classList.remove('active');
+            document.getElementById('btn-mode-pomo').classList.remove('active');
+            const customSetting = document.getElementById('custom-time-setting');
+
+            if (mode === 'stopwatch') {
+                document.getElementById('btn-mode-sw').classList.add('active');
+                customSetting.style.display = 'none';
+                secondsLeftOrElapsed = 0;
+            } else {
+                document.getElementById('btn-mode-pomo').classList.add('active');
+                customSetting.style.display = 'flex';
+                secondsLeftOrElapsed = selectedMinutes * 60;
+            }
+            updateTimerClockDisplay();
+        }
+
+        function applyCustomMinutes() {
+            const mins = parseInt(document.getElementById('input-custom-minutes').value);
+            if(mins > 0 && mins <= 180) {
+                selectedMinutes = mins;
+                secondsLeftOrElapsed = selectedMinutes * 60;
+                updateTimerClockDisplay();
+                alert(`${mins}分タイマーをセットしました！`);
+            } else {
+                alert("1〜180分の間で設定してください。");
+            }
+        }
+
+        function selectBookForTimer(title) {
+            currentBookTitle = title;
+            document.getElementById('timer-target').textContent = `対象: ${title}`;
+            if(timerMode === 'stopwatch') {
+                secondsLeftOrElapsed = 0;
+            } else {
+                secondsLeftOrElapsed = selectedMinutes * 60;
+            }
+            updateTimerClockDisplay();
+            document.getElementById('timer-clock').scrollIntoView({ behavior: 'smooth' });
         }
 
         function toggleTimer() {
             const btn = document.getElementById('timer-btn');
-            
+            if(!currentBookTitle) {
+                currentBookTitle = "自由学習";
+                document.getElementById('timer-target').textContent = "対象: 自由学習";
+            }
+
             if (timerInterval) {
-                // ストップ（一時停止・記録）時の処理
+                // ストップさせた時
                 clearInterval(timerInterval);
                 timerInterval = null;
                 btn.textContent = "スタート";
                 btn.style.backgroundColor = "var(--primary-color)";
-                
-                // 計測完了によるポップアップ開閉ロジック
-                if (currentMode === 'stopwatch') {
-                    openRecordModal(currentMaterial || "自由計測", Math.round(timeInSeconds / 60));
-                } else if (currentMode === 'pomo25') {
-                    // 25分からどれだけ減ったかで勉強時間を逆算
-                    const elapsedMinutes = Math.round((25 * 60 - timeInSeconds) / 60);
-                    openRecordModal(currentMaterial || "ポモドーロ(集中)", elapsedMinutes || 25);
-                } else if (currentMode === 'pomo5') {
-                    alert("休憩時間の計測を一時停止しました。記録は行いません。");
+
+                // 記録ダイアログの起動
+                let recordedMins = 0;
+                if(timerMode === 'stopwatch') {
+                    recordedMins = Math.round(secondsLeftOrElapsed / 60);
+                } else {
+                    recordedMins = Math.round((selectedMinutes * 60 - secondsLeftOrElapsed) / 60);
                 }
+                openRecordModal(currentBookTitle, recordedMins || 1);
             } else {
-                // スタート時の処理
-                if(!currentMaterial && currentMode === 'stopwatch') {
-                    currentMaterial = "自主学習";
-                    document.getElementById('timer-target').textContent = `対象: 自主学習`;
-                } else if (!currentMaterial && (currentMode === 'pomo25' || currentMode === 'pomo5')) {
-                    currentMaterial = currentMode === 'pomo25' ? "ポモドーロ(集中)" : "ポモドーロ(休憩)";
-                    document.getElementById('timer-target').textContent = `対象: ${currentMaterial}`;
-                }
+                // スタートさせた時
+                btn.textContent = "ストップして記録";
+                btn.style.backgroundColor = "var(--danger-color)";
 
                 timerInterval = setInterval(() => {
-                    if (currentMode === 'stopwatch') {
-                        timeInSeconds++; // カウントアップ
+                    if (timerMode === 'stopwatch') {
+                        secondsLeftOrElapsed++;
                     } else {
-                        timeInSeconds--; // カウントダウン
-                        if (timeInSeconds <= 0) {
-                            // タイマー終了時のポモドーロ連動
+                        secondsLeftOrElapsed--;
+                        if(secondsLeftOrElapsed <= 0) {
                             clearInterval(timerInterval);
                             timerInterval = null;
                             btn.textContent = "スタート";
                             btn.style.backgroundColor = "var(--primary-color)";
-                            handleTimerExpiry();
+                            alert(`⏱ 【${currentBookTitle}】のタイマー時間（${selectedMinutes}分）が終了しました！記録をつけましょう。`);
+                            openRecordModal(currentBookTitle, selectedMinutes);
                             return;
                         }
                     }
-                    updateTimerDisplay();
+                    updateTimerClockDisplay();
                 }, 1000);
-
-                btn.textContent = "ストップして記録";
-                btn.style.backgroundColor = "var(--danger-color)";
-            }
-        }
-
-        // タイマーが0になった時の自動連動
-        function handleTimerExpiry() {
-            updateTimerDisplay();
-            if (currentMode === 'pomo25') {
-                alert("🎉 25分間の集中セッションが終了しました！素晴らしいです。5分間の休憩に入りましょう！");
-                openRecordModal(currentMaterial, 25);
-                document.getElementById('record-memo').value = "ポモドーロ1セッション完了！完了！";
-                changeTimerMode('pomo5'); // 自動で5分休憩モードに切り替え
-            } else if (currentMode === 'pomo5') {
-                alert("⏱ 5分間の休憩が終了しました！次の25分集中セッションを始めましょう！");
-                changeTimerMode('pomo25'); // 自動で25分集中モードに戻す
             }
         }
 
         function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            changeTimerMode(currentMode); // 現在のモードの初期値に戻す
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             document.getElementById('timer-btn').textContent = "スタート";
             document.getElementById('timer-btn').style.backgroundColor = "var(--primary-color)";
+            setTimerMode(timerMode);
         }
 
-        function updateTimerDisplay() {
-            const hrs = String(Math.floor(timeInSeconds / 3600)).padStart(2, '0');
-            const mins = String(Math.floor((timeInSeconds % 3600) / 60)).padStart(2, '0');
-            const secs = String(timeInSeconds % 60).padStart(2, '0');
+        function updateTimerClockDisplay() {
+            const hrs = String(Math.floor(secondsLeftOrElapsed / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((secondsLeftOrElapsed % 3600) / 60)).padStart(2, '0');
+            const secs = String(secondsLeftOrElapsed % 60).padStart(2, '0');
             document.getElementById('timer-clock').textContent = `${hrs}:${mins}:${secs}`;
         }
 
-        function openRecordModal(materialName, defaultMinutes = 30) {
-            currentMaterial = materialName;
+        /* ----------------------------------
+           学習記録・写真付きメモ処理
+        ---------------------------------- */
+        let tempLogImage = "";
+        function previewLogImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempLogImage = e.target.result;
+                    const preview = document.getElementById('log-image-preview');
+                    preview.textContent = "";
+                    preview.style.backgroundImage = `url('${tempLogImage}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openRecordModal(materialName, defaultMinutes) {
             document.getElementById('record-form-box').style.display = 'block';
-            document.getElementById('record-title').textContent = `${materialName} の記録`;
-            document.getElementById('record-duration').value = defaultMinutes <= 0 ? 1 : defaultMinutes; // 最低1分
+            document.getElementById('record-title').textContent = `「${materialName}」の学習記録`;
+            document.getElementById('record-duration').value = defaultMinutes;
             document.getElementById('record-form-box').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 記録の保存処理
         function saveLog() {
-            const duration = document.getElementById('record-duration').value;
+            const duration = parseInt(document.getElementById('record-duration').value);
             const amount = document.getElementById('record-amount').value.trim();
             const memo = document.getElementById('record-memo').value.trim();
+
+            if(!duration || duration <= 0) { alert("有効な勉強時間を入力してください"); return; }
+
+            // 新規ログオブジェクト作成
+            const newLog = {
+                id: Date.now(),
+                username: appState.username,
+                avatar: appState.userAvatar,
+                material: currentBookTitle,
+                duration: duration,
+                amount: amount,
+                memo: memo,
+                image: tempLogImage, // メモ下の画像添付データ
+                timestamp: "たった今"
+            };
+
+            appState.logs.unshift(newLog); // 最新を先頭に
+            saveStateToLocalStorage();
+
+            // フォームリセット
+            document.getElementById('record-form-box').style.display = 'none';
+            document.getElementById('record-amount').value = "";
+            document.getElementById('record-memo').value = "";
+            document.getElementById('log-image-file').value = "";
+            const imgPreview = document.getElementById('log-image-preview');
+            imgPreview.textContent = "なし";
+            imgPreview.style.backgroundImage = "none";
+            tempLogImage = "";
+
+            // 各種再描写
+            renderTimeline();
+            updateStatistics();
+            resetTimer();
             
-            if(!duration || duration <= 0) { alert("勉強時間を入力してください。"); return; }
+            alert("学習履歴を記録・保存しました！");
+            switchTab('timeline');
+        }
 
-            const timelineList = document.getElementById('timeline-list');
-            const newItem = document.createElement('div');
-            newItem.className = 'timeline-item';
+        function renderTimeline() {
+            const container = document.getElementById('timeline-list');
+            container.innerHTML = "";
 
-            let avatarStyle = ""; let avatarContent = "";
-            if (uploadedImageDataUrl) {
-                avatarStyle = `style="background-image: url('${uploadedImageDataUrl}');"`;
-            } else {
-                avatarStyle = `style="background-color: var(--primary-light); color: var(--primary-color);"`;
-                avatarContent = currentUsername.charAt(0);
+            if(appState.logs.length === 0) {
+                container.innerHTML = "<p style='color:var(--text-muted); font-size:14px;'>ここにあなたの勉強の歴史が刻まれます。さっそく計測して記録してみましょう！</p>";
+                return;
             }
 
-            const progressText = amount ? `<span style="color: var(--primary-color);">📈 進捗: ${amount} ページ消化</span>` : `<span style="color: var(--text-muted);">⏱ 時間のみ記録</span>`;
-            const memoText = memo ? `<p style="margin-top: 6px; color: var(--text-main); font-size: 13px; background: #ffffff; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);"> 📝 メモ: ${memo}</p>` : '';
+            appState.logs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
 
-            newItem.innerHTML = `
-                <div class="timeline-header">
-                    <div class="timeline-user">
-                        <div class="timeline-avatar" ${avatarStyle}>${avatarContent}</div>
-                        <strong>${currentUsername}</strong>
+                let avStyle = log.avatar ? `style="background-image: url('${log.avatar}');"` : `style="background-color: var(--primary-light); color: var(--primary-color);"`;
+                let avContent = log.avatar ? "" : log.username.charAt(0);
+
+                const progressNode = log.amount ? `<span style="color: var(--primary-color); font-weight:bold;">📈 進捗: ${log.amount}</span>` : `<span style="color: var(--text-muted);">⏱ 時間のみ計測</span>`;
+                const memoNode = log.memo ? `<p style="margin-top: 6px; font-size: 13px; background: #f1f5f9; padding: 8px; border-radius: 6px; color:#334155;">📝 ${log.memo}</p>` : "";
+                
+                // メモ欄の下に添付画像を表示する条件分岐（大進化！）
+                const imageNode = log.image ? `<img src="${log.image}" class="attached-log-img" alt="学習メモ画像">` : "";
+
+                item.innerHTML = `
+                    <div class="timeline-header">
+                        <div class="timeline-user">
+                            <div class="timeline-avatar" ${avStyle}>${avContent}</div>
+                            <strong>${log.username}</strong>
+                        </div>
+                        <span style="font-size:11px; color:var(--text-muted);">${log.timestamp}</span>
                     </div>
-                    <span>たった今</span>
-                </div>
-                <div class="timeline-content">
-                    <strong>${currentMaterial}</strong> を <strong>${duration}分</strong> 勉強しました！<br>
-                    ${progressText}
-                    ${memoText}
-                </div>
-            `;
-            timelineList.insertBefore(newItem, timelineList.firstChild);
+                    <div class="timeline-content">
+                        <strong>${log.material}</strong> を <strong>${log.duration}分間</strong> 勉強しました！<br>
+                        ${progressNode}
+                        ${memoNode}
+                        ${imageNode}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
 
-            alert("記録が完了しました！");
-            document.getElementById('today-time').textContent = `1時間${parseInt(duration) + 15}分`;
-            document.getElementById('record-form-box').style.display = 'none';
-            document.getElementById('record-amount').value = '';
-            document.getElementById('record-memo').value = '';
-            resetTimer();
-            switchTab('timeline');
+        function updateStatistics() {
+            // 本日の合計時間を算出
+            const totalMins = appState.logs.reduce((sum, log) => sum + log.duration, 0);
+            document.getElementById('today-time').textContent = `${totalMins}分`;
+            document.getElementById('total-books-stat').textContent = `${appState.books.length}冊`;
+            document.getElementById('total-logs-stat').textContent = `${appState.logs.length}回`;
+        }
+
+        /* ----------------------------------
+           画面ナビゲーション（タブ・レスポンシブ共通）
+        ---------------------------------- */
+        function handleTabClick(tabId) {
+            switchTab(tabId);
+        }
+
+        function switchTab(tabId) {
+            // すべてのタブコンテンツを非表示
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            // すべてのメニュー選択をリセット
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+
+            // 対象タブをアクティブ
+            document.getElementById(tabId).classList.add('active');
+            
+            // ヘッダータイトル書き換え
+            const titleMap = { 'dashboard': 'ダッシュボード', 'bookshelf': '教材の管理登録', 'timeline': 'タイムライン履歴', 'settings': 'プロフィール設定' };
+            document.getElementById('page-title').textContent = titleMap[tabId];
+
+            // ナビゲーションの見た目を連動
+            const pcItem = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+            if(pcItem) pcItem.classList.add('active');
+            
+            const bnavItem = document.getElementById(`bnav-${tabId}`);
+            if(bnavItem) bnavItem.classList.add('active');
         }
     </script>
 </body>
